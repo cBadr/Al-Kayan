@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { Cairo, Tajawal } from "next/font/google";
 import "./globals.css";
 import { Providers } from "@/components/providers";
-import { getAppSettings } from "@/lib/app-settings";
 
 const cairo = Cairo({
   variable: "--font-cairo",
@@ -17,19 +16,12 @@ const tajawal = Tajawal({
   display: "swap",
 });
 
-export const dynamic = "force-dynamic";
-
-export async function generateMetadata(): Promise<Metadata> {
-  try {
-    const s = await getAppSettings();
-    return {
-      title: `${s.app_name} — ${s.tagline ?? ""}`.trim().replace(/—\s*$/, ""),
-      description: s.tagline ?? "منصة احترافية متكاملة لإدارة أكاديميات كرة القدم",
-    };
-  } catch {
-    return { title: "سلامة", description: "منصة احترافية متكاملة لإدارة أكاديميات كرة القدم" };
-  }
-}
+// Static metadata — touching Supabase here breaks prerendering of /_not-found.
+// Per-page titles can be set via their own generateMetadata.
+export const metadata: Metadata = {
+  title: "سلامة — منصة أكاديميات كرة القدم",
+  description: "منصة احترافية متكاملة لإدارة أكاديميات كرة القدم",
+};
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
