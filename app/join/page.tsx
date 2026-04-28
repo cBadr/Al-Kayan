@@ -2,6 +2,8 @@ import { createClient } from "@/lib/supabase/server";
 import { Card, CardContent } from "@/components/ui/card";
 import { BrandLogo } from "@/components/logo";
 import { getAppSettings } from "@/lib/app-settings";
+
+export const dynamic = "force-dynamic";
 import Link from "next/link";
 
 export default async function JoinIndex() {

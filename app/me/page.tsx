@@ -8,6 +8,8 @@ import { LogoutButton } from "@/components/logout-button";
 import { BrandLogo } from "@/components/logo";
 import { signedUrl } from "@/lib/storage";
 
+export const dynamic = "force-dynamic";
+
 export default async function MePage() {
   const me = await requireUser();
   const sb = await createClient();

@@ -6,6 +6,8 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { submitJoinRequest } from "./actions";
 
+export const dynamic = "force-dynamic";
+
 export default async function JoinFormPage({ params }: {
   params: Promise<{ slug: string }>;
 }) {
