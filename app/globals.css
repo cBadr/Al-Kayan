@@ -1,26 +1,312 @@
 @import "tailwindcss";
 
+/* ================================================================
+   SALAMA — Football Academy Design System
+   Palette: deep emerald · obsidian · ivory · champion gold
+   ================================================================ */
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Surfaces */
+  --background: #f5f7f4;
+  --foreground: #0b1410;
+  --card: #ffffff;
+  --card-glass: rgba(255, 255, 255, 0.78);
+
+  /* Brand — emerald gradient */
+  --emerald-50:  #ecfdf5;
+  --emerald-100: #d1fae5;
+  --emerald-200: #a7f3d0;
+  --emerald-400: #34d399;
+  --emerald-500: #10b981;
+  --emerald-600: #059669;
+  --emerald-700: #047857;
+  --emerald-800: #065f46;
+  --emerald-900: #064e3b;
+  --emerald-950: #022c22;
+
+  /* Obsidian — deep black-greens */
+  --obsidian-900: #0a1410;
+  --obsidian-800: #0f1d18;
+  --obsidian-700: #162822;
+
+  /* Champion gold */
+  --gold-300: #fcd34d;
+  --gold-400: #fbbf24;
+  --gold-500: #f59e0b;
+  --gold-600: #d97706;
+
+  /* Semantic */
+  --primary: var(--emerald-800);
+  --primary-foreground: #ffffff;
+  --accent: var(--gold-400);
+  --muted: #e7eee9;
+  --muted-foreground: #4b5d54;
+  --border: #d8e2dc;
+  --destructive: #dc2626;
+  --warning: #d97706;
+  --success: #059669;
+
+  /* Glass + shadow */
+  --shadow-soft: 0 1px 3px rgba(6, 95, 70, 0.06), 0 4px 16px rgba(6, 95, 70, 0.06);
+  --shadow-elev: 0 8px 24px rgba(6, 78, 59, 0.10), 0 2px 6px rgba(6, 78, 59, 0.06);
+  --shadow-glow: 0 0 0 1px rgba(251, 191, 36, 0.25), 0 8px 30px rgba(251, 191, 36, 0.18);
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-card: var(--card);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-accent: var(--accent);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-warning: var(--warning);
+  --color-success: var(--success);
+
+  --color-emerald-50:  var(--emerald-50);
+  --color-emerald-100: var(--emerald-100);
+  --color-emerald-200: var(--emerald-200);
+  --color-emerald-400: var(--emerald-400);
+  --color-emerald-500: var(--emerald-500);
+  --color-emerald-600: var(--emerald-600);
+  --color-emerald-700: var(--emerald-700);
+  --color-emerald-800: var(--emerald-800);
+  --color-emerald-900: var(--emerald-900);
+  --color-emerald-950: var(--emerald-950);
+
+  --color-obsidian-900: var(--obsidian-900);
+  --color-obsidian-800: var(--obsidian-800);
+  --color-obsidian-700: var(--obsidian-700);
+
+  --color-gold-300: var(--gold-300);
+  --color-gold-400: var(--gold-400);
+  --color-gold-500: var(--gold-500);
+  --color-gold-600: var(--gold-600);
+
+  --font-sans: var(--font-cairo), "Cairo", ui-sans-serif, system-ui, sans-serif;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+* {
+  border-color: var(--border);
 }
 
-body {
+html, body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* ----------------------------------------------------------------
+   Pitch pattern background — subtle football field stripes
+   ---------------------------------------------------------------- */
+.bg-pitch {
+  background-image:
+    radial-gradient(at 20% 0%, rgba(6, 78, 59, 0.07) 0px, transparent 50%),
+    radial-gradient(at 80% 100%, rgba(251, 191, 36, 0.06) 0px, transparent 50%),
+    repeating-linear-gradient(
+      90deg,
+      transparent 0,
+      transparent 96px,
+      rgba(6, 95, 70, 0.025) 96px,
+      rgba(6, 95, 70, 0.025) 192px
+    );
+}
+
+.bg-mesh-emerald {
+  background:
+    radial-gradient(at 8% 12%, rgba(16, 185, 129, 0.18) 0px, transparent 45%),
+    radial-gradient(at 92% 8%, rgba(251, 191, 36, 0.12) 0px, transparent 40%),
+    radial-gradient(at 50% 100%, rgba(6, 78, 59, 0.85) 0px, transparent 60%),
+    linear-gradient(135deg, var(--obsidian-900) 0%, var(--emerald-900) 60%, var(--emerald-800) 100%);
+}
+
+/* ----------------------------------------------------------------
+   Glass surfaces
+   ---------------------------------------------------------------- */
+.glass {
+  background: var(--card-glass);
+  backdrop-filter: blur(14px) saturate(150%);
+  -webkit-backdrop-filter: blur(14px) saturate(150%);
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  box-shadow: var(--shadow-soft);
+}
+.glass-dark {
+  background: rgba(10, 20, 16, 0.55);
+  backdrop-filter: blur(18px) saturate(160%);
+  -webkit-backdrop-filter: blur(18px) saturate(160%);
+  border: 1px solid rgba(251, 191, 36, 0.18);
+}
+
+/* ----------------------------------------------------------------
+   Premium card — soft elevation with gold-edge hover
+   ---------------------------------------------------------------- */
+.card-premium {
+  position: relative;
+  background: linear-gradient(180deg, #ffffff 0%, #fafdfb 100%);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-soft);
+  transition: transform .25s ease, box-shadow .25s ease, border-color .25s ease;
+}
+.card-premium:hover {
+  transform: translateY(-2px);
+  border-color: rgba(6, 95, 70, 0.25);
+  box-shadow: var(--shadow-elev);
+}
+.card-premium::before {
+  content: "";
+  position: absolute; inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: linear-gradient(135deg, transparent 60%, rgba(251, 191, 36, 0) 100%);
+  transition: background .3s;
+}
+.card-premium:hover::before {
+  background: linear-gradient(135deg, transparent 50%, rgba(251, 191, 36, 0.08) 100%);
+}
+
+/* Stat card with side accent bar */
+.stat-card {
+  position: relative;
+  overflow: hidden;
+}
+.stat-card::after {
+  content: "";
+  position: absolute;
+  top: 0; right: 0; bottom: 0;
+  width: 3px;
+  background: linear-gradient(180deg, var(--emerald-700), var(--gold-400));
+  opacity: 0.7;
+}
+
+/* ----------------------------------------------------------------
+   Headlines — gold-emerald gradient text
+   ---------------------------------------------------------------- */
+.text-gradient-gold {
+  background: linear-gradient(135deg, var(--gold-400) 0%, var(--gold-500) 50%, var(--gold-600) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.text-gradient-emerald {
+  background: linear-gradient(135deg, var(--emerald-700) 0%, var(--emerald-900) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* ----------------------------------------------------------------
+   Animations
+   ---------------------------------------------------------------- */
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes scale-in {
+  from { opacity: 0; transform: scale(.96); }
+  to   { opacity: 1; transform: scale(1); }
+}
+@keyframes shine {
+  0%   { transform: translateX(-120%); }
+  100% { transform: translateX(220%); }
+}
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-6px); }
+}
+@keyframes pulse-gold {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(251, 191, 36, 0.45); }
+  70%      { box-shadow: 0 0 0 10px rgba(251, 191, 36, 0); }
+}
+
+.animate-fade-up   { animation: fade-up   .5s ease both; }
+.animate-fade-in   { animation: fade-in   .4s ease both; }
+.animate-scale-in  { animation: scale-in  .35s ease both; }
+.animate-float     { animation: float     3.5s ease-in-out infinite; }
+.animate-pulse-gold{ animation: pulse-gold 2s infinite; }
+
+/* Stagger helper */
+.stagger > * { animation: fade-up .45s ease both; }
+.stagger > *:nth-child(1) { animation-delay: .04s; }
+.stagger > *:nth-child(2) { animation-delay: .09s; }
+.stagger > *:nth-child(3) { animation-delay: .14s; }
+.stagger > *:nth-child(4) { animation-delay: .19s; }
+.stagger > *:nth-child(5) { animation-delay: .24s; }
+.stagger > *:nth-child(6) { animation-delay: .29s; }
+.stagger > *:nth-child(7) { animation-delay: .34s; }
+.stagger > *:nth-child(8) { animation-delay: .39s; }
+
+/* Shine overlay (used inside hero buttons / primary CTA) */
+.shine {
+  position: relative; overflow: hidden; isolation: isolate;
+}
+.shine::before {
+  content: "";
+  position: absolute; top: 0; left: 0; bottom: 0;
+  width: 60%;
+  background: linear-gradient(110deg, transparent 30%, rgba(255,255,255,0.35) 50%, transparent 70%);
+  transform: translateX(-120%);
+  z-index: 0;
+}
+.shine:hover::before { animation: shine 1s ease forwards; }
+
+/* ----------------------------------------------------------------
+   Custom scrollbar
+   ---------------------------------------------------------------- */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(6, 95, 70, 0.18); border-radius: 6px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(6, 95, 70, 0.32); }
+
+/* ----------------------------------------------------------------
+   Misc utilities
+   ---------------------------------------------------------------- */
+[dir="rtl"] .ltr-numbers {
+  direction: ltr;
+  unicode-bidi: embed;
+  display: inline-block;
+}
+
+.divider-gold {
+  height: 2px;
+  background: linear-gradient(90deg, transparent 0%, var(--gold-400) 50%, transparent 100%);
+  border: 0;
+}
+
+.chip {
+  display: inline-flex; align-items: center; gap: .35rem;
+  padding: .25rem .65rem;
+  border-radius: 9999px;
+  font-size: .75rem; font-weight: 600;
+  background: rgba(6, 95, 70, 0.08);
+  color: var(--emerald-800);
+  border: 1px solid rgba(6, 95, 70, 0.18);
+}
+.chip-gold {
+  background: rgba(251, 191, 36, 0.12);
+  color: var(--gold-600);
+  border-color: rgba(251, 191, 36, 0.35);
+}
+
+/* Avatar ring */
+.avatar-ring {
+  background: conic-gradient(from 180deg, var(--emerald-700), var(--gold-400), var(--emerald-700));
+  padding: 2px;
+  border-radius: 9999px;
+}
+
+/* Print */
+@media print {
+  @page { size: A4; margin: 12mm; }
+  .no-print, aside { display: none !important; }
+  body, html { background: #fff !important; }
+  .glass, .card-premium { box-shadow: none !important; background: #fff !important; }
 }

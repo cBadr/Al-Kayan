@@ -1,36 +1,67 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# سلامة — نظام إدارة أكاديميات كرة القدم
 
-## Getting Started
+منصة SaaS متعددة الإيجار لإدارة أكاديميات كرة القدم: تدريبات، حضور، مباريات، تقارير أداء، اشتراكات ومصروفات وأصول، وإشعارات.
 
-First, run the development server:
+## التقنيات
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+- **Next.js 16** (App Router, Server Actions) + **TypeScript**
+- **Tailwind CSS v4** + **Cairo** font + RTL افتراضي
+- **Supabase** (Postgres + Auth + Storage + RLS)
+- **Recharts** للرسوم، **qrcode** لـ QR الأصول، **Resend** للبريد
+- **TanStack Query**
+
+## الإعداد
+
+### 1. متغيرات البيئة
+انسخ `.env.example` إلى `.env.local` واملأ القيم.
+
+### 2. تطبيق مخطط قاعدة البيانات
+شغّل ملفات SQL بالترتيب على Supabase:
+
+```
+supabase/migrations/0001_init.sql      # الجداول و triggers و sequences
+supabase/migrations/0002_rls.sql       # Row Level Security
+supabase/migrations/0003_views.sql     # views للتقارير و ROI
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 3. Storage Bucket
+أنشئ bucket باسم `join-docs` (private) لتخزين صور المتقدمين.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### 4. إنشاء أول Super Admin
+بعد تسجيل أول حساب عبر Auth:
+```sql
+insert into memberships (user_id, academy_id, role)
+values ('<auth-user-id>', null, 'super_admin');
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### 5. التشغيل
+```bash
+npm install
+npm run dev
+```
+ثم افتح http://localhost:3000
 
-## Learn More
+## الأدوار
+- **Super Admin** — إدارة كل الأكاديميات.
+- **مدير أكاديمية** — إدارة كاملة لأكاديميته.
+- **مدرب** — تدريبات، حضور (مع قفل زمني)، مباريات.
+- **لاعب** — بروفايله واشتراكاته وإشعاراته.
+- **طلب انضمام** — عبر `/join/[slug]` بدون حساب.
 
-To learn more about Next.js, take a look at the following resources:
+## الميزات الرئيسية
+- كود لاعب فريد لكل أكاديمية يبدأ من `000001`.
+- ترقيم إيصالات يبدأ من `1000001`.
+- قفل زمني لتعديل الحضور.
+- إصابات مرتبطة بالسجل الصحي.
+- مباريات بمشاركات من تصنيفات متعددة.
+- تقارير: حضور، أهداف، إنذارات، ROI، مقارنة لاعبين.
+- توليد فواتير شهرية يدوي.
+- دفعات جزئية + إيصالات قابلة للطباعة.
+- أصول ثابتة بـ QR.
+- إشعارات in-app + email.
+- حقول إجبارية ديناميكية.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## النشر
+```bash
+vercel deploy
+```
