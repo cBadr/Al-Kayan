@@ -17,12 +17,18 @@ const tajawal = Tajawal({
   display: "swap",
 });
 
+export const dynamic = "force-dynamic";
+
 export async function generateMetadata(): Promise<Metadata> {
-  const s = await getAppSettings();
-  return {
-    title: `${s.app_name} — ${s.tagline ?? ""}`.trim().replace(/—\s*$/, ""),
-    description: s.tagline ?? "منصة احترافية متكاملة لإدارة أكاديميات كرة القدم",
-  };
+  try {
+    const s = await getAppSettings();
+    return {
+      title: `${s.app_name} — ${s.tagline ?? ""}`.trim().replace(/—\s*$/, ""),
+      description: s.tagline ?? "منصة احترافية متكاملة لإدارة أكاديميات كرة القدم",
+    };
+  } catch {
+    return { title: "سلامة", description: "منصة احترافية متكاملة لإدارة أكاديميات كرة القدم" };
+  }
 }
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {

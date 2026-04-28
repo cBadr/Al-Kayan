@@ -1,5 +1,5 @@
 import { cache } from "react";
-import { createAdminClient } from "@/lib/supabase/admin";
+import { createAdminClient, hasSupabaseEnv } from "@/lib/supabase/admin";
 
 export interface AppSettings {
   id: number;
@@ -34,7 +34,13 @@ const DEFAULTS: AppSettings = {
 };
 
 export const getAppSettings = cache(async (): Promise<AppSettings> => {
-  const admin = createAdminClient();
-  const { data } = await admin.from("app_settings").select("*").eq("id", 1).maybeSingle();
-  return data ?? DEFAULTS;
+  // Graceful at build time / when env not configured
+  if (!hasSupabaseEnv()) return DEFAULTS;
+  try {
+    const admin = createAdminClient();
+    const { data } = await admin.from("app_settings").select("*").eq("id", 1).maybeSingle();
+    return data ?? DEFAULTS;
+  } catch {
+    return DEFAULTS;
+  }
 });
