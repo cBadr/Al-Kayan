@@ -31,7 +31,7 @@ export default async function SettingsPage({ params }: { params: Promise<{ acade
 
   return (
     <>
-      <PageHeader title="إعدادات الأكاديمية" />
+      <PageHeader title="إعدادات الأكاديمية" hidePrint />
       <PageBody>
         <div className="space-y-6 max-w-4xl">
           {/* Academy info */}

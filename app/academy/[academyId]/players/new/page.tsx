@@ -30,7 +30,7 @@ export default async function NewPlayerPage({ params }: { params: Promise<{ acad
 
   return (
     <>
-      <PageHeader title="إضافة لاعب" description="بيانات اللاعب الأساسية" />
+      <PageHeader title="إضافة لاعب" description="بيانات اللاعب الأساسية" hidePrint />
       <PageBody>
         <Card className="max-w-3xl">
           <CardContent className="pt-6">

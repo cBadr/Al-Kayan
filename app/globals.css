@@ -307,6 +307,20 @@ html, body {
 @media print {
   @page { size: A4; margin: 12mm; }
   .no-print, aside { display: none !important; }
-  body, html { background: #fff !important; }
+  body, html { background: #fff !important; color: #000 !important; }
   .glass, .card-premium { box-shadow: none !important; background: #fff !important; }
+  /* Force browsers to print background colors (badges, headers, etc.) */
+  * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+  /* Don't break inside cards / tables row */
+  .card, .rounded-xl, .rounded-2xl, tr { break-inside: avoid; page-break-inside: avoid; }
+  /* Always show table headers across pages */
+  thead { display: table-header-group; }
+  tfoot { display: table-footer-group; }
+  /* Tighter padding so content fits A4 better */
+  .pt-6 { padding-top: 0.75rem !important; }
+  .py-5, .py-6 { padding-top: 0.5rem !important; padding-bottom: 0.5rem !important; }
+  /* Remove animation flicker */
+  .animate-fade-in, .animate-fade-up, .animate-scale-in, .stagger { animation: none !important; }
+  /* Headings show with anchor color so emerald comes through */
+  h1, h2, h3 { color: #14532d !important; }
 }

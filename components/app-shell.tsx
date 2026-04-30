@@ -4,6 +4,7 @@ import { LogoutButton } from "@/components/logout-button";
 import { BrandLogo } from "@/components/logo";
 import { MobileNav } from "@/components/mobile-nav";
 import { NotificationsBell } from "@/components/notifications-bell";
+import { PrintButton } from "@/components/print-button";
 import { getAppSettings } from "@/lib/app-settings";
 
 interface NavItem { href: string; label: string; icon?: ReactNode; badge?: number | null }
@@ -93,14 +94,43 @@ export async function AppShell({
   );
 }
 
-export function PageHeader({ title, description, actions }: { title: string; description?: string; actions?: ReactNode }) {
+export function PageHeader({
+  title, description, actions, hidePrint,
+}: {
+  title: string;
+  description?: string;
+  actions?: ReactNode;
+  /** Hide the default print button (use for forms/setup pages where printing is meaningless). */
+  hidePrint?: boolean;
+}) {
   return (
     <div className="flex flex-wrap items-start justify-between gap-3 px-6 md:px-8 py-5 md:py-6 border-b border-border bg-white/70 backdrop-blur-sm no-print animate-fade-in">
       <div>
         <h1 className="text-2xl md:text-3xl font-black tracking-tight text-gradient-emerald">{title}</h1>
         {description && <p className="text-sm text-muted-foreground mt-1">{description}</p>}
       </div>
-      {actions && <div className="flex flex-wrap gap-2">{actions}</div>}
+      <div className="flex flex-wrap gap-2 items-center">
+        {actions}
+        {!hidePrint && <PrintButton />}
+      </div>
+    </div>
+  );
+}
+
+/** Printed-only header that appears at the top of every printout — shows
+ * academy name and date so the printed sheet is self-explanatory. */
+export function PrintHeader({ academyName, subtitle }: { academyName: string; subtitle?: string }) {
+  return (
+    <div className="hidden print:block border-b-2 border-emerald-700 pb-3 mb-4">
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-xl font-black text-emerald-900">{academyName}</h2>
+          {subtitle && <p className="text-xs text-muted-foreground">{subtitle}</p>}
+        </div>
+        <div className="text-left text-[10px] text-muted-foreground">
+          طُبع في {new Date().toLocaleString("ar-EG")}
+        </div>
+      </div>
     </div>
   );
 }

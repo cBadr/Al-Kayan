@@ -105,6 +105,13 @@ export default async function ReportsPage({
             <Button asChild variant="outline">
               <Link href={`/academy/${academyId}/reports/compare`}>مقارنة بين لاعبين</Link>
             </Button>
+            <Button asChild variant="gold">
+              <Link href={`/academy/${academyId}/reports/print?${new URLSearchParams(
+                Object.entries(sp).filter(([_, v]) => v) as [string, string][],
+              ).toString()}`}>
+                🖨 طباعة احترافية
+              </Link>
+            </Button>
           </>
         }
       />

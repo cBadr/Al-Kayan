@@ -89,7 +89,10 @@ export default async function AttendancePage({ params, searchParams }: {
 
   return (
     <>
-      <PageHeader title="الحضور والغياب" description={new Date(date).toLocaleDateString("ar-EG", { weekday: "long", year: "numeric", month: "long", day: "numeric" })} />
+      <PageHeader
+        title="الحضور والغياب"
+        description={new Date(date).toLocaleDateString("ar-EG", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}
+      />
       <PageBody>
         {/* Date + category filter */}
         <Card className="mb-4">
