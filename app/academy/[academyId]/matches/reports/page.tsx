@@ -83,7 +83,7 @@ export default async function MatchReportsPage({
   return (
     <>
       <PageHeader
-        title="التقارير الرياضية"
+        title="تقارير المباريات"
         description="ملخصات وإحصائيات تفصيلية مبنية على المباريات المسجلة"
         actions={
           <>

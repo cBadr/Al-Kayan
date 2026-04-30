@@ -41,7 +41,7 @@ export default async function AcademyLayout({
     { href: `${base}/trainings`, label: "التدريبات" },
     { href: `${base}/attendance`, label: "تسجيل الحضور" },
     { href: `${base}/matches`, label: "المباريات" },
-    { href: `${base}/reports`, label: "التقارير الرياضية" },
+    { href: `${base}/reports`, label: "تقارير اللاعبين" },
     { href: `${base}/finance/subscriptions`, label: "إيصالات السداد" },
     { href: `${base}/finance/expenses`, label: "المصروفات" },
     { href: `${base}/finance/revenues`, label: "الإيرادات" },

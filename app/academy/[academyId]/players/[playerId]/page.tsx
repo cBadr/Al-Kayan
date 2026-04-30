@@ -9,12 +9,13 @@ import { formatCurrency, formatDate } from "@/lib/utils";
 import { signedUrl } from "@/lib/storage";
 import Link from "next/link";
 import { AttendanceTrend } from "@/components/attendance-trend";
+import { reactivatePlayer } from "../actions";
 
 export default async function PlayerProfilePage({ params }: { params: Promise<{ academyId: string; playerId: string }> }) {
   const { academyId, playerId } = await params;
   const me = await requireAcademyAccess(academyId);
   const sb = await createClient();
-  const [{ data: p }, { data: attSummary }, { data: matchSummary }, { data: roi }, { data: injuries }, { data: subs }, { data: attRecords }, { data: matchParts }] = await Promise.all([
+  const [{ data: p }, { data: attSummary }, { data: matchSummary }, { data: roi }, { data: injuries }, { data: subs }, { data: attRecords }, { data: matchParts }, { data: discipline }] = await Promise.all([
     sb.from("players").select("*, categories(name, monthly_fee)").eq("id", playerId).maybeSingle(),
     sb.from("player_attendance_summary").select("*").eq("player_id", playerId).maybeSingle(),
     sb.from("player_match_summary").select("*").eq("player_id", playerId).maybeSingle(),
@@ -28,6 +29,7 @@ export default async function PlayerProfilePage({ params }: { params: Promise<{ 
       .select("goals, yellow_cards, red_cards, sent_off, minutes_played, notes, matches!inner(id, opponent, match_date, our_score, their_score, duration_min)")
       .eq("player_id", playerId)
       .order("match_date", { ascending: false, referencedTable: "matches" }),
+    sb.from("player_discipline").select("active_yellows, total_yellows, total_reds, suspension_reason").eq("player_id", playerId).maybeSingle(),
   ]);
 
   if (!p) return <PageBody><p>اللاعب غير موجود</p></PageBody>;
@@ -56,6 +58,43 @@ export default async function PlayerProfilePage({ params }: { params: Promise<{ 
         }
       />
       <PageBody>
+        {/* Suspension banner */}
+        {p.status === "suspended" && (
+          <div className="mb-6 rounded-xl border-2 border-red-300 bg-red-50 p-4 flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="text-2xl">🚫</span>
+                <div>
+                  <h3 className="font-black text-red-700">اللاعب موقوف عن المشاركة</h3>
+                  <p className="text-xs text-red-700/80 mt-0.5">
+                    {p.suspension_reason
+                      ? `السبب: ${p.suspension_reason.startsWith("auto:") ? `إيقاف تلقائي (${(discipline as any)?.active_yellows ?? 3} بطاقات صفراء)` : p.suspension_reason}`
+                      : "تم الإيقاف يدوياً"}
+                  </p>
+                </div>
+              </div>
+            </div>
+            {isManager && (
+              <form action={async () => { "use server"; await reactivatePlayer(academyId, playerId); }}>
+                <Button type="submit" variant="gold">✅ إعادة تفعيل اللاعب</Button>
+              </form>
+            )}
+          </div>
+        )}
+
+        {/* Yellow card warning (active = 2) */}
+        {p.status === "active" && (discipline as any)?.active_yellows === 2 && (
+          <div className="mb-6 rounded-xl border-2 border-amber-300 bg-amber-50 p-4 flex items-center gap-3">
+            <span className="text-2xl">⚠️</span>
+            <div>
+              <h3 className="font-bold text-amber-800">تحذير: بطاقتان صفراوان نشطتان</h3>
+              <p className="text-xs text-amber-800/80 mt-0.5">
+                البطاقة الصفراء التالية ستوقف اللاعب تلقائياً عن المشاركة حتى تفعيل الإدمن.
+              </p>
+            </div>
+          </div>
+        )}
+
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <Card>
             <CardHeader><CardTitle>البيانات</CardTitle></CardHeader>

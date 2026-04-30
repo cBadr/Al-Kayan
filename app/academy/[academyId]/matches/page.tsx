@@ -82,7 +82,7 @@ export default async function MatchesPage({
         description="إدارة المباريات وقوائم اللاعبين والتشكيلة على الملعب"
         actions={
           <Button asChild variant="gold">
-            <Link href={`/academy/${academyId}/matches/reports`}>📊 التقارير الرياضية</Link>
+            <Link href={`/academy/${academyId}/matches/reports`}>📊 تقارير المباريات</Link>
           </Button>
         }
       />

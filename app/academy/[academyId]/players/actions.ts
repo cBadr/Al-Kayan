@@ -105,3 +105,25 @@ export async function updatePlayerStatus(academyId: string, playerId: string, st
   await sb.from("players").update({ status }).eq("id", playerId).eq("academy_id", academyId);
   revalidatePath(`/academy/${academyId}/players/${playerId}`);
 }
+
+/**
+ * Reactivate a player whose status is "suspended" (e.g. by 3-yellow-card auto-rule).
+ * Resets the yellow-card cycle so future yellows count from now.
+ */
+export async function reactivatePlayer(academyId: string, playerId: string) {
+  await requireAcademyManager(academyId);
+  const sb = await createClient();
+  // Use the SQL helper function defined in migration 0007 (security definer).
+  const { error } = await sb.rpc("reactivate_player", { p_player: playerId });
+  if (error) {
+    // Fallback: do it manually if rpc missing for any reason.
+    await sb.from("players").update({
+      status: "active",
+      suspension_reason: null,
+      yellow_cycle_reset_at: new Date().toISOString(),
+    }).eq("id", playerId).eq("academy_id", academyId);
+  }
+  revalidatePath(`/academy/${academyId}/players/${playerId}`);
+  revalidatePath(`/academy/${academyId}/players`);
+  revalidatePath(`/academy/${academyId}/reports`);
+}
