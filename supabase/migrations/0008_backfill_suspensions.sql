@@ -8,8 +8,10 @@
 -- that can be invoked from the app (or via SQL) to fix discrepancies anytime.
 -- ============================================================================
 
+drop function if exists recompute_player_suspensions(uuid);
+
 create or replace function recompute_player_suspensions(p_academy uuid default null)
-returns table(player_id uuid, full_name text, active_yellows integer, action text)
+returns table(player_id uuid, full_name text, active_yellows integer, op text)
 language plpgsql security definer as $$
 begin
   return query
@@ -32,16 +34,17 @@ begin
   )
   select s.id, s.full_name, s.yc::integer, 'auto_suspended'::text from suspended s;
 
-  -- Audit entries
+  -- Audit entries (qualify columns explicitly so they don't clash with the
+  -- function's OUT parameters or the audit_log table's `action` column).
   insert into audit_log (academy_id, action, entity_type, entity_id, metadata)
   select p.academy_id, 'player.auto_suspended_backfill', 'players', p.id,
          jsonb_build_object('yellow_cards', active_yellow_card_count(p.id))
     from players p
    where p.suspension_reason like 'auto: %'
      and not exists (
-       select 1 from audit_log
-        where entity_id = p.id
-          and action in ('player.auto_suspended', 'player.auto_suspended_backfill')
+       select 1 from audit_log al
+        where al.entity_id = p.id
+          and al.action in ('player.auto_suspended', 'player.auto_suspended_backfill')
      );
 end $$;
 
