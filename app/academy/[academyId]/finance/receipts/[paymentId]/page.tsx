@@ -3,6 +3,8 @@ import { requireAcademyManager } from "@/lib/auth/rbac";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { PrintExport } from "@/components/print-export";
 import { signedUrl } from "@/lib/storage";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 export default async function ReceiptPage({ params }: { params: Promise<{ academyId: string; paymentId: string }> }) {
   const { academyId, paymentId } = await params;
@@ -24,8 +26,13 @@ export default async function ReceiptPage({ params }: { params: Promise<{ academ
 
   return (
     <div className="bg-white">
-      <div className="no-print p-4 border-b border-border flex justify-between items-center">
-        <h1 className="font-bold text-lg">إيصال سداد رقم <span className="ltr-numbers">{p.receipt_no}</span></h1>
+      <div className="no-print p-4 border-b border-border flex justify-between items-center gap-3">
+        <div className="flex items-center gap-3">
+          <Button asChild variant="outline" size="sm">
+            <Link href={`/academy/${academyId}/finance/subscriptions/${p.subscription_id}`}>← العودة</Link>
+          </Button>
+          <h1 className="font-bold text-lg">إيصال سداد رقم <span className="ltr-numbers">{p.receipt_no}</span></h1>
+        </div>
         <PrintExport filename={`receipt-${p.receipt_no}`} />
       </div>
 

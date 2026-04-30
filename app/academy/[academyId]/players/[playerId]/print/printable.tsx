@@ -305,7 +305,7 @@ export function PrintablePlayerProfile({
                     <th className="p-2 border border-emerald-200">المصدر</th>
                     <th className="p-2 border border-emerald-200">النوع</th>
                     <th className="p-2 border border-emerald-200">المكان</th>
-                    <th className="p-2 border border-emerald-200">العودة المتوقعة</th>
+                    <th className="p-2 border border-emerald-200">ملاحظات</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -315,7 +315,7 @@ export function PrintablePlayerProfile({
                       <td className="p-2 border border-emerald-100">{i.source === "match" ? "مباراة" : "تدريب"}</td>
                       <td className="p-2 border border-emerald-100">{i.injury_type ?? "—"}</td>
                       <td className="p-2 border border-emerald-100">{i.body_location ?? "—"}</td>
-                      <td className="p-2 border border-emerald-100">{formatDate(i.expected_return_at)}</td>
+                      <td className="p-2 border border-emerald-100 text-xs">{i.notes ?? "—"}</td>
                     </tr>
                   ))}
                 </tbody>

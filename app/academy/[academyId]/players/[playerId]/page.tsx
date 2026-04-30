@@ -233,7 +233,7 @@ export default async function PlayerProfilePage({ params }: { params: Promise<{ 
           <CardHeader><CardTitle>السجل الصحي (الإصابات)</CardTitle></CardHeader>
           <CardContent>
             <Table>
-              <THead><Tr><Th>التاريخ</Th><Th>المصدر</Th><Th>النوع</Th><Th>المكان</Th><Th>العودة المتوقعة</Th><Th>ملاحظات</Th></Tr></THead>
+              <THead><Tr><Th>التاريخ</Th><Th>المصدر</Th><Th>النوع</Th><Th>المكان</Th><Th>ملاحظات</Th></Tr></THead>
               <TBody>
                 {(injuries ?? []).map((i: any) => (
                   <Tr key={i.id}>
@@ -241,11 +241,10 @@ export default async function PlayerProfilePage({ params }: { params: Promise<{ 
                     <Td>{i.source === "match" ? "مباراة" : "تدريب"}</Td>
                     <Td>{i.injury_type ?? "—"}</Td>
                     <Td>{i.body_location ?? "—"}</Td>
-                    <Td>{formatDate(i.expected_return_at)}</Td>
                     <Td className="text-xs text-muted-foreground">{i.notes ?? "—"}</Td>
                   </Tr>
                 ))}
-                {(injuries ?? []).length === 0 && <Tr><Td colSpan={6} className="text-center text-muted-foreground py-6">لا توجد إصابات مسجلة</Td></Tr>}
+                {(injuries ?? []).length === 0 && <Tr><Td colSpan={5} className="text-center text-muted-foreground py-6">لا توجد إصابات مسجلة</Td></Tr>}
               </TBody>
             </Table>
           </CardContent>

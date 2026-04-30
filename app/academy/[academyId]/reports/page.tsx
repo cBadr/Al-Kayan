@@ -7,6 +7,8 @@ import { createClient } from "@/lib/supabase/server";
 import { requireAcademyAccess } from "@/lib/auth/rbac";
 import Link from "next/link";
 import { PlayerReports } from "./player-reports";
+import { RecomputeButton } from "./recompute-button";
+import { recomputeSuspensions } from "./actions";
 
 export const dynamic = "force-dynamic";
 
@@ -99,6 +101,7 @@ export default async function ReportsPage({
         description="إصدار تقارير مخصصة بفلاتر متعددة، مع مصفوفة البطاقات والدقائق لكل مباراة"
         actions={
           <>
+            <RecomputeButton action={async () => { "use server"; return await recomputeSuspensions(academyId); }} />
             <Button asChild variant="outline">
               <Link href={`/academy/${academyId}/reports/compare`}>مقارنة بين لاعبين</Link>
             </Button>
