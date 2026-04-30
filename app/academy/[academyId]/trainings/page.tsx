@@ -8,8 +8,9 @@ import { createClient } from "@/lib/supabase/server";
 import { requireAcademyAccess } from "@/lib/auth/rbac";
 import { formatDate } from "@/lib/utils";
 import Link from "next/link";
-import { createTrainingBulk, createSingleTraining, deleteTraining, updateTraining } from "./actions";
+import { createTrainingBulk, createSingleTraining, updateTraining } from "./actions";
 import { TrainingsCalendar } from "@/components/trainings-calendar";
+import { TrainingsTable } from "./trainings-table";
 
 const WEEKDAYS = [
   { value: 6, label: "السبت" },
@@ -150,34 +151,11 @@ export default async function TrainingsPage({ params, searchParams }: {
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader><CardTitle>التدريبات المجدولة</CardTitle></CardHeader>
-          <CardContent>
-            <Table>
-              <THead><Tr><Th>التاريخ</Th><Th>التصنيف</Th><Th>المدة</Th><Th>الموقع</Th><Th></Th></Tr></THead>
-              <TBody>
-                {(trainings ?? []).map((t: any) => (
-                  <Tr key={t.id}>
-                    <Td>{formatDate(t.scheduled_at, true)}</Td>
-                    <Td>{t.categories?.name ?? "—"}</Td>
-                    <Td>{t.duration_min} د</Td>
-                    <Td>{t.location ?? "—"}</Td>
-                    <Td className="text-left">
-                      <div className="flex gap-3 justify-end items-center">
-                        <Link href={`/academy/${academyId}/attendance?training=${t.id}`} className="text-primary text-sm hover:underline">حضور</Link>
-                        <Link href={`/academy/${academyId}/trainings?edit=${t.id}`} className="text-warning text-sm hover:underline">تعديل</Link>
-                        <form action={async () => { "use server"; await deleteTraining(academyId, t.id); }}>
-                          <button className="text-destructive text-sm hover:underline" type="submit">حذف</button>
-                        </form>
-                      </div>
-                    </Td>
-                  </Tr>
-                ))}
-                {(trainings ?? []).length === 0 && <Tr><Td colSpan={5} className="text-center text-muted-foreground py-8">لا توجد تدريبات</Td></Tr>}
-              </TBody>
-            </Table>
-          </CardContent>
-        </Card>
+        <TrainingsTable
+          academyId={academyId}
+          trainings={(trainings ?? []) as any}
+          categories={(cats ?? []) as any}
+        />
       </PageBody>
     </>
   );

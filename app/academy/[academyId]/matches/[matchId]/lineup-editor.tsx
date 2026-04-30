@@ -276,7 +276,7 @@ export function LineupEditor({
                   <button
                     type="button"
                     onClick={() => setActiveSlot(isActive ? null : s.id)}
-                    className={`w-14 h-14 rounded-full border-2 border-dashed transition-all flex items-center justify-center text-[10px] font-bold ${
+                    className={`w-10 h-10 sm:w-14 sm:h-14 rounded-full border-2 border-dashed transition-all flex items-center justify-center text-[8px] sm:text-[10px] font-bold ${
                       isActive
                         ? "border-amber-400 bg-amber-400/30 text-white scale-110"
                         : "border-white/40 text-white/70 hover:border-white hover:bg-white/10"
@@ -449,7 +449,7 @@ function PlayerToken({
       onClick={onClick}
       className="group flex flex-col items-center gap-0.5 cursor-pointer"
     >
-      <div className={`relative w-14 h-14 rounded-full bg-white shadow-lg ring-4 ${ringColor} flex items-center justify-center group-hover:scale-110 transition-transform`}>
+      <div className={`relative w-10 h-10 sm:w-14 sm:h-14 rounded-full bg-white shadow-lg ring-2 sm:ring-4 ${ringColor} flex items-center justify-center group-hover:scale-110 transition-transform`}>
         <span className="text-emerald-950 font-black text-lg ltr-numbers">{jersey ?? "?"}</span>
         {isCaptain && (
           <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-amber-500 text-white text-[10px] font-black flex items-center justify-center shadow">C</span>

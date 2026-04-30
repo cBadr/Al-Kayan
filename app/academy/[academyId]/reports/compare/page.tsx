@@ -106,7 +106,7 @@ export default async function ComparePage({
 
         {stats.length >= 2 && (
           <>
-            <div className="grid gap-4 mb-6" style={{ gridTemplateColumns: `repeat(${Math.min(stats.length, 4)}, minmax(0, 1fr))` }}>
+            <div className={`grid gap-4 mb-6 grid-cols-1 ${stats.length === 2 ? "sm:grid-cols-2" : stats.length === 3 ? "sm:grid-cols-2 lg:grid-cols-3" : "sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"}`}>
               {stats.map((s) => (
                 <Card key={s.player_id}>
                   <CardContent className="pt-6 text-center space-y-2">

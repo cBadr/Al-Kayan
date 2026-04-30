@@ -33,6 +33,9 @@ export function PrintablePlayerProfile({
   player: p,
   photoUrl,
   logoUrl,
+  sealUrl,
+  signatureUrl,
+  managerName,
   academyId,
   attSummary,
   matchSummary,
@@ -44,6 +47,9 @@ export function PrintablePlayerProfile({
   player: any;
   photoUrl: string | null;
   logoUrl: string | null;
+  sealUrl?: string | null;
+  signatureUrl?: string | null;
+  managerName?: string | null;
   academyId: string;
   attSummary: any;
   matchSummary: any;
@@ -333,8 +339,16 @@ export function PrintablePlayerProfile({
         {/* Signatures */}
         <footer className="mt-10 pt-6 border-t border-emerald-200 grid grid-cols-3 gap-6 text-center text-xs">
           <SignatureLine label="ولي الأمر" />
-          <SignatureLine label="المدير" />
-          <SignatureLine label="ختم الأكاديمية" />
+          <SignatureLine
+            label={managerName ? `المدير / ${managerName}` : "المدير"}
+            imageUrl={signatureUrl}
+            imageType="signature"
+          />
+          <SignatureLine
+            label="ختم الأكاديمية"
+            imageUrl={sealUrl}
+            imageType="seal"
+          />
         </footer>
 
         <p className="text-[9px] text-muted-foreground text-center mt-6">
@@ -400,10 +414,31 @@ function Stat({ label, value }: { label: string; value: string }) {
   );
 }
 
-function SignatureLine({ label }: { label: string }) {
+function SignatureLine({
+  label,
+  imageUrl,
+  imageType,
+}: {
+  label: string;
+  imageUrl?: string | null;
+  imageType?: "signature" | "seal";
+}) {
   return (
     <div>
-      <div className="border-b border-emerald-300 h-12 mb-1" />
+      <div className="relative border-b border-emerald-300 h-16 mb-1 flex items-end justify-center">
+        {imageUrl && (
+          <span className="absolute inset-0 flex items-center justify-center">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={imageUrl}
+              alt={label}
+              className={imageType === "seal"
+                ? "max-h-16 max-w-20 object-contain opacity-90"
+                : "max-h-14 max-w-32 object-contain"}
+            />
+          </span>
+        )}
+      </div>
       <p className="text-muted-foreground">{label}</p>
     </div>
   );

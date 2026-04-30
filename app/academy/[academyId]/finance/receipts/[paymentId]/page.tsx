@@ -12,7 +12,7 @@ export default async function ReceiptPage({ params }: { params: Promise<{ academ
   const sb = await createClient();
   const { data: p } = await sb
     .from("payments")
-    .select("*, subscriptions(amount_due, amount_paid, period_start, period_end, players(code, full_name, photo_url)), academies:academy_id(name, logo_url, settings, address, phone)")
+    .select("*, subscriptions(amount_due, amount_paid, period_start, period_end, players(code, full_name, photo_url)), academies:academy_id(name, logo_url, seal_url, manager_signature_url, manager_name, settings, address, phone)")
     .eq("id", paymentId)
     .maybeSingle();
 
@@ -77,7 +77,39 @@ export default async function ReceiptPage({ params }: { params: Promise<{ academ
           </tbody>
         </table>
 
-        {footer && <p className="text-center text-xs text-muted-foreground border-t border-border pt-4">{footer}</p>}
+        {/* Signatures */}
+        <div className="mt-10 grid grid-cols-2 gap-6 text-center text-xs">
+          <div>
+            <div className="relative h-20 border-b border-emerald-300 mb-2 flex items-center justify-center">
+              {(academy as any).manager_signature_url && (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={(academy as any).manager_signature_url}
+                  alt=""
+                  className="max-h-16 max-w-40 object-contain"
+                />
+              )}
+            </div>
+            <p className="text-muted-foreground">
+              {(academy as any).manager_name ? `المدير / ${(academy as any).manager_name}` : "المدير"}
+            </p>
+          </div>
+          <div>
+            <div className="relative h-20 border-b border-emerald-300 mb-2 flex items-center justify-center">
+              {(academy as any).seal_url && (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={(academy as any).seal_url}
+                  alt=""
+                  className="max-h-20 max-w-24 object-contain opacity-90"
+                />
+              )}
+            </div>
+            <p className="text-muted-foreground">ختم الأكاديمية</p>
+          </div>
+        </div>
+
+        {footer && <p className="text-center text-xs text-muted-foreground border-t border-border pt-4 mt-6">{footer}</p>}
       </div>
     </div>
   );

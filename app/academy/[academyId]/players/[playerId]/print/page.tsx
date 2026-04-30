@@ -19,7 +19,7 @@ export default async function PlayerPrintPage({ params }: { params: Promise<{ ac
     { data: subs },
     { data: matchParts },
   ] = await Promise.all([
-    sb.from("players").select("*, categories(name, monthly_fee), academies(name, logo_url, address, phone)").eq("id", playerId).maybeSingle(),
+    sb.from("players").select("*, categories(name, monthly_fee), academies(name, logo_url, seal_url, manager_signature_url, manager_name, address, phone)").eq("id", playerId).maybeSingle(),
     sb.from("player_attendance_summary").select("*").eq("player_id", playerId).maybeSingle(),
     sb.from("player_match_summary").select("*").eq("player_id", playerId).maybeSingle(),
     sb.from("player_roi").select("*").eq("player_id", playerId).maybeSingle(),
@@ -33,14 +33,22 @@ export default async function PlayerPrintPage({ params }: { params: Promise<{ ac
   ]);
 
   if (!p) return <p className="p-6">اللاعب غير موجود</p>;
+  // Player photo is in private join-docs (needs signed URL).
   const photo = await signedUrl(p.photo_url);
-  const logo = await signedUrl(p.academies?.logo_url ?? null);
+  // Logo / seal / signature are uploaded to the public `logos` bucket — already public URLs.
+  const logo = p.academies?.logo_url ?? null;
+  const seal = (p.academies as any)?.seal_url ?? null;
+  const signature = (p.academies as any)?.manager_signature_url ?? null;
+  const managerName = (p.academies as any)?.manager_name ?? null;
 
   return (
     <PrintablePlayerProfile
       player={p as any}
       photoUrl={photo}
       logoUrl={logo}
+      sealUrl={seal}
+      signatureUrl={signature}
+      managerName={managerName}
       academyId={academyId}
       attSummary={attSummary as any}
       matchSummary={matchSummary as any}

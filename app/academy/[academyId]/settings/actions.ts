@@ -13,6 +13,7 @@ const infoSchema = z.object({
   whatsapp: z.string().optional().or(z.literal("")),
   email: z.string().email().optional().or(z.literal("")),
   address: z.string().optional().or(z.literal("")),
+  manager_name: z.string().optional().or(z.literal("")),
 });
 
 export async function saveAcademyInfo(academyId: string, fd: FormData) {
@@ -27,10 +28,15 @@ export async function saveAcademyInfo(academyId: string, fd: FormData) {
     whatsapp: parsed.data.whatsapp || null,
     email: parsed.data.email || null,
     address: parsed.data.address || null,
+    manager_name: parsed.data.manager_name || null,
   };
 
   const newLogo = await uploadIfPresent("logos", fd, "logo", `academies/${academyId}`);
   if (newLogo) update.logo_url = newLogo;
+  const newSeal = await uploadIfPresent("logos", fd, "seal", `academies/${academyId}/seal`);
+  if (newSeal) update.seal_url = newSeal;
+  const newSignature = await uploadIfPresent("logos", fd, "manager_signature", `academies/${academyId}/signature`);
+  if (newSignature) update.manager_signature_url = newSignature;
 
   const sb = await createClient();
   await sb.from("academies").update(update).eq("id", academyId);

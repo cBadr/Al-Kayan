@@ -60,7 +60,44 @@ export default async function SettingsPage({ params }: { params: Promise<{ acade
                   <F name="whatsapp" label="واتساب" dir="ltr" defaultValue={a.whatsapp ?? ""} />
                   <F name="email" label="البريد الإلكتروني" type="email" dir="ltr" defaultValue={a.email ?? ""} />
                   <F name="address" label="العنوان" defaultValue={a.address ?? ""} />
+                  <F name="manager_name" label="اسم المدير (للمستندات الرسمية)" defaultValue={(a as any).manager_name ?? ""} />
                 </div>
+
+                <div className="border-t border-border pt-4 mt-4 space-y-3">
+                  <h4 className="font-bold text-emerald-900 text-sm">الختم والتوقيع للمستندات الرسمية</h4>
+                  <p className="text-xs text-muted-foreground">تظهر في أسفل ملفات الطباعة وإيصالات السداد. يُفضَّل صور بخلفية شفافة (PNG).</p>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="seal">ختم الأكاديمية</Label>
+                      <div className="flex items-center gap-3">
+                        <div className="w-24 h-24 rounded-xl bg-muted flex items-center justify-center overflow-hidden border border-border">
+                          {(a as any).seal_url ? (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img src={(a as any).seal_url} alt="" className="w-full h-full object-contain p-1" />
+                          ) : (
+                            <span className="text-muted-foreground text-xs">لا يوجد</span>
+                          )}
+                        </div>
+                        <Input id="seal" name="seal" type="file" accept="image/*" className="flex-1" />
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="manager_signature">توقيع المدير</Label>
+                      <div className="flex items-center gap-3">
+                        <div className="w-32 h-24 rounded-xl bg-muted flex items-center justify-center overflow-hidden border border-border">
+                          {(a as any).manager_signature_url ? (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img src={(a as any).manager_signature_url} alt="" className="w-full h-full object-contain p-1" />
+                          ) : (
+                            <span className="text-muted-foreground text-xs">لا يوجد</span>
+                          )}
+                        </div>
+                        <Input id="manager_signature" name="manager_signature" type="file" accept="image/*" className="flex-1" />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
                 <div className="flex justify-end">
                   <Button type="submit">حفظ بيانات الأكاديمية</Button>
                 </div>

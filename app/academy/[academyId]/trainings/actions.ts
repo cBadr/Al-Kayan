@@ -77,3 +77,76 @@ export async function deleteTraining(academyId: string, trainingId: string) {
   await sb.from("trainings").delete().eq("id", trainingId).eq("academy_id", academyId);
   revalidatePath(`/academy/${academyId}/trainings`);
 }
+
+export async function deleteTrainings(academyId: string, ids: string[]) {
+  await requireAcademyAccess(academyId);
+  if (ids.length === 0) return { count: 0 };
+  const sb = await createClient();
+  const { error } = await sb.from("trainings")
+    .delete()
+    .in("id", ids)
+    .eq("academy_id", academyId);
+  if (error) return { error: error.message, count: 0 };
+  revalidatePath(`/academy/${academyId}/trainings`);
+  return { count: ids.length };
+}
+
+/**
+ * Import trainings from a parsed CSV. Expected rows:
+ * { category_name, scheduled_at, duration_min, location }
+ * - category_name resolved by matching academy categories (case-insensitive)
+ * - scheduled_at must be ISO-parseable (e.g. "2026-05-10 18:00")
+ */
+export async function importTrainingsCsv(
+  academyId: string,
+  rows: { category_name?: string; scheduled_at: string; duration_min?: number | string; location?: string }[],
+): Promise<{ inserted: number; errors: string[] }> {
+  await requireAcademyAccess(academyId);
+  const sb = await createClient();
+
+  const { data: cats } = await sb.from("categories")
+    .select("id, name")
+    .eq("academy_id", academyId);
+  const catByName = new Map(
+    (cats ?? []).map((c: any) => [c.name.trim().toLowerCase(), c.id]),
+  );
+
+  const toInsert: any[] = [];
+  const errors: string[] = [];
+  rows.forEach((r, idx) => {
+    const lineNo = idx + 2; // +1 for header, +1 for 1-based index
+    if (!r.scheduled_at) {
+      errors.push(`السطر ${lineNo}: تاريخ التدريب مطلوب`);
+      return;
+    }
+    const dt = new Date(r.scheduled_at);
+    if (isNaN(dt.getTime())) {
+      errors.push(`السطر ${lineNo}: تاريخ غير صالح: "${r.scheduled_at}"`);
+      return;
+    }
+    let categoryId: string | null = null;
+    if (r.category_name && r.category_name.trim()) {
+      categoryId = catByName.get(r.category_name.trim().toLowerCase()) ?? null;
+      if (!categoryId) {
+        errors.push(`السطر ${lineNo}: التصنيف "${r.category_name}" غير موجود`);
+        return;
+      }
+    }
+    toInsert.push({
+      academy_id: academyId,
+      category_id: categoryId,
+      scheduled_at: dt.toISOString(),
+      duration_min: r.duration_min ? Number(r.duration_min) : 90,
+      location: r.location?.trim() || null,
+    });
+  });
+
+  if (toInsert.length === 0) return { inserted: 0, errors };
+
+  const { error } = await sb.from("trainings").insert(toInsert);
+  if (error) {
+    return { inserted: 0, errors: [...errors, `خطأ في الإدراج: ${error.message}`] };
+  }
+  revalidatePath(`/academy/${academyId}/trainings`);
+  return { inserted: toInsert.length, errors };
+}
