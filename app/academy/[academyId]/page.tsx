@@ -3,8 +3,9 @@ import { StatCard } from "@/components/stat-card";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { createClient } from "@/lib/supabase/server";
 import { formatCurrency } from "@/lib/utils";
-import { Users, Layers, UserPlus, Calendar, TrendingUp, AlertTriangle, Wallet, Trophy } from "lucide-react";
+import { Users, Layers, UserPlus, Calendar, Trophy } from "lucide-react";
 import Link from "next/link";
+import { FinanceStatCards } from "./finance-stat-cards";
 
 export default async function AcademyDashboard({ params }: { params: Promise<{ academyId: string }> }) {
   const { academyId } = await params;
@@ -40,10 +41,12 @@ export default async function AcademyDashboard({ params }: { params: Promise<{ a
           <StatCard label="عدد التصنيفات" value={String(categoriesCount ?? 0)} icon={<Layers className="w-6 h-6" />} accent="emerald" />
           <StatCard label="طلبات انضمام جديدة" value={String(pendingCount ?? 0)} icon={<UserPlus className="w-6 h-6" />} accent="gold" />
           <StatCard label="تدريبات الأسبوع" value={String(trainingsThisWeek ?? 0)} icon={<Calendar className="w-6 h-6" />} accent="emerald" />
-          <StatCard label="إجمالي التحصيل" value={formatCurrency(finance?.total_collected ?? 0)} icon={<TrendingUp className="w-6 h-6" />} accent="emerald" />
-          <StatCard label="المتأخرات" value={formatCurrency(finance?.outstanding ?? 0)} icon={<AlertTriangle className="w-6 h-6" />} accent="warning" />
-          <StatCard label="المصروفات" value={formatCurrency(finance?.total_expenses ?? 0)} icon={<Wallet className="w-6 h-6" />} accent="destructive" />
-          <StatCard label="صافي الربح" value={formatCurrency(finance?.net_profit ?? 0)} icon={<Trophy className="w-6 h-6" />} accent="gold" />
+          <FinanceStatCards
+            totalCollected={formatCurrency(finance?.total_collected ?? 0)}
+            outstanding={formatCurrency(finance?.outstanding ?? 0)}
+            totalExpenses={formatCurrency(finance?.total_expenses ?? 0)}
+            netProfit={formatCurrency(finance?.net_profit ?? 0)}
+          />
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-8">

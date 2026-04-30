@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -53,6 +54,14 @@ export function LoginForm() {
       <Button type="submit" className="w-full text-base h-11" disabled={loading}>
         {loading ? "جارٍ الدخول..." : "تسجيل الدخول"}
       </Button>
+      <div className="text-center">
+        <Link href="/forgot-password" className="text-sm text-emerald-700 hover:underline">
+          نسيت كلمة المرور؟
+        </Link>
+      </div>
+      {params.get("reset") === "1" && (
+        <p className="text-sm text-emerald-700 text-center">تم تحديث كلمة المرور — سجِّل الدخول الآن.</p>
+      )}
     </form>
   );
 }

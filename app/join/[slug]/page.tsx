@@ -39,7 +39,9 @@ export default async function JoinFormPage({ params }: {
             </div>
             <F name="birth_date" label="تاريخ الميلاد" type="date" required={isReq("birth_date")} />
             <F name="phone" label="الهاتف" dir="ltr" required={isReq("phone")} />
-            <F name="email" label="البريد الإلكتروني" type="email" dir="ltr" required={isReq("email")} />
+            <F name="email" label="البريد الإلكتروني" type="email" dir="ltr" required />
+            <F name="password" label="كلمة المرور (8 أحرف فأكثر) *" type="password" dir="ltr" required minLength={8} autoComplete="new-password" />
+            <F name="password_confirm" label="تأكيد كلمة المرور *" type="password" dir="ltr" required minLength={8} autoComplete="new-password" />
             <F name="national_id" label="الرقم القومي" dir="ltr" required={isReq("national_id")} />
             <F name="guardian_name" label="اسم ولي الأمر" required={isReq("guardian_name")} />
             <F name="guardian_phone" label="هاتف ولي الأمر" dir="ltr" required={isReq("guardian_phone")} />

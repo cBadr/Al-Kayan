@@ -4,6 +4,8 @@ import { Table, TBody, THead, Td, Th, Tr } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { requireSuperAdmin } from "@/lib/auth/rbac";
+import { adminSetPassword } from "./actions";
+import { UserActionsCell } from "./user-actions-cell";
 
 const ROLE_LABEL: Record<string, string> = {
   super_admin: "مدير عام",
@@ -42,7 +44,7 @@ export default async function UsersPage() {
           <CardContent>
             <Table>
               <THead>
-                <Tr><Th>البريد</Th><Th>الاسم</Th><Th>الأدوار</Th><Th>التسجيل</Th></Tr>
+                <Tr><Th>البريد</Th><Th>الاسم</Th><Th>الأدوار</Th><Th>التسجيل</Th><Th className="text-left">إجراءات</Th></Tr>
               </THead>
               <TBody>
                 {users.map((u: any) => {
@@ -63,6 +65,9 @@ export default async function UsersPage() {
                       </Td>
                       <Td className="text-xs text-muted-foreground" dir="ltr">
                         {new Date(u.created_at).toLocaleDateString("ar-EG")}
+                      </Td>
+                      <Td className="text-left">
+                        <UserActionsCell userId={u.id} email={u.email ?? null} setPassword={adminSetPassword} />
                       </Td>
                     </Tr>
                   );

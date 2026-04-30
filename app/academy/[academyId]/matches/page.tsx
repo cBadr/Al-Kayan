@@ -29,6 +29,8 @@ export default async function MatchesPage({ params }: { params: Promise<{ academ
               <div className="space-y-1.5"><Label htmlFor="match_date">التاريخ</Label><Input id="match_date" name="match_date" type="datetime-local" required /></div>
               <div className="space-y-1.5"><Label htmlFor="our_score">لنا</Label><Input id="our_score" name="our_score" type="number" min="0" /></div>
               <div className="space-y-1.5"><Label htmlFor="their_score">للخصم</Label><Input id="their_score" name="their_score" type="number" min="0" /></div>
+              <div className="space-y-1.5"><Label htmlFor="duration_min">مدة المباراة (د)</Label><Input id="duration_min" name="duration_min" type="number" min="1" defaultValue={90} /></div>
+              <div className="space-y-1.5 md:col-span-4"><Label htmlFor="notes">ملاحظات</Label><Input id="notes" name="notes" /></div>
               <div className="md:col-span-5 flex justify-end"><Button type="submit">إضافة مباراة</Button></div>
             </form>
           </CardContent>

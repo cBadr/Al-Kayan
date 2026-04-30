@@ -87,7 +87,8 @@ export async function updatePlayer(academyId: string, playerId: string, fd: Form
 export async function deletePlayer(academyId: string, playerId: string) {
   await requireAcademyManager(academyId);
   const sb = await createClient();
-  await sb.from("players").delete().eq("id", playerId).eq("academy_id", academyId);
+  const { error } = await sb.from("players").delete().eq("id", playerId).eq("academy_id", academyId);
+  if (error) return { error: error.message };
   revalidatePath(`/academy/${academyId}/players`);
   redirect(`/academy/${academyId}/players`);
 }

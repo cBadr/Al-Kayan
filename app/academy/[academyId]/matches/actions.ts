@@ -14,12 +14,14 @@ export async function createMatch(academyId: string, fd: FormData) {
     match_date: new Date(String(fd.get("match_date"))).toISOString(),
     our_score: fd.get("our_score") ? Number(fd.get("our_score")) : null,
     their_score: fd.get("their_score") ? Number(fd.get("their_score")) : null,
+    duration_min: fd.get("duration_min") ? Number(fd.get("duration_min")) : 90,
+    notes: String(fd.get("notes") ?? "") || null,
   });
   revalidatePath(`/academy/${academyId}/matches`);
 }
 
 export async function setParticipation(academyId: string, matchId: string, playerId: string, fields: Partial<{
-  goals: number; yellow_cards: number; red_cards: number; sent_off: boolean; notes: string;
+  goals: number; yellow_cards: number; red_cards: number; sent_off: boolean; notes: string; minutes_played: number;
 }>) {
   await requireAcademyAccess(academyId);
   const sb = await createClient();

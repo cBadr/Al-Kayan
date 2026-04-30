@@ -15,7 +15,7 @@ export default async function PlayerProfilePage({ params }: { params: Promise<{ 
   const { academyId, playerId } = await params;
   const me = await requireAcademyAccess(academyId);
   const sb = await createClient();
-  const [{ data: p }, { data: attSummary }, { data: matchSummary }, { data: roi }, { data: injuries }, { data: subs }, { data: attRecords }] = await Promise.all([
+  const [{ data: p }, { data: attSummary }, { data: matchSummary }, { data: roi }, { data: injuries }, { data: subs }, { data: attRecords }, { data: matchParts }] = await Promise.all([
     sb.from("players").select("*, categories(name, monthly_fee)").eq("id", playerId).maybeSingle(),
     sb.from("player_attendance_summary").select("*").eq("player_id", playerId).maybeSingle(),
     sb.from("player_match_summary").select("*").eq("player_id", playerId).maybeSingle(),
@@ -25,6 +25,10 @@ export default async function PlayerProfilePage({ params }: { params: Promise<{ 
     sb.from("attendance_records")
       .select("status, recorded_at, trainings!inner(scheduled_at)")
       .eq("player_id", playerId),
+    sb.from("match_participations")
+      .select("goals, yellow_cards, red_cards, sent_off, minutes_played, notes, matches!inner(id, opponent, match_date, our_score, their_score, duration_min)")
+      .eq("player_id", playerId)
+      .order("match_date", { ascending: false, referencedTable: "matches" }),
   ]);
 
   if (!p) return <PageBody><p>اللاعب غير موجود</p></PageBody>;
@@ -128,6 +132,58 @@ export default async function PlayerProfilePage({ params }: { params: Promise<{ 
                   </Tr>
                 ))}
                 {(subs ?? []).length === 0 && <Tr><Td colSpan={6} className="text-center text-muted-foreground py-6">لا توجد إيصالات</Td></Tr>}
+              </TBody>
+            </Table>
+          </CardContent>
+        </Card>
+
+        <Card className="mt-6">
+          <CardHeader><CardTitle>سجل المباريات والبطاقات</CardTitle></CardHeader>
+          <CardContent>
+            <Table>
+              <THead>
+                <Tr>
+                  <Th>التاريخ</Th>
+                  <Th>الخصم</Th>
+                  <Th>النتيجة</Th>
+                  <Th>الدقائق</Th>
+                  <Th>أهداف</Th>
+                  <Th>إنذار (صفراء)</Th>
+                  <Th>طرد (حمراء)</Th>
+                  <Th>ملاحظات</Th>
+                </Tr>
+              </THead>
+              <TBody>
+                {((matchParts ?? []) as any[]).map((mp, i) => {
+                  const m = mp.matches;
+                  return (
+                    <Tr key={`${m?.id}-${i}`}>
+                      <Td>{formatDate(m?.match_date, true)}</Td>
+                      <Td className="font-medium">
+                        <Link href={`/academy/${academyId}/matches/${m?.id}`} className="hover:underline">
+                          {m?.opponent}
+                        </Link>
+                      </Td>
+                      <Td className="ltr-numbers">{m?.our_score ?? "-"} : {m?.their_score ?? "-"}</Td>
+                      <Td>{mp.minutes_played ?? 0} / {m?.duration_min ?? 90}</Td>
+                      <Td>{mp.goals ?? 0}</Td>
+                      <Td>
+                        {mp.yellow_cards > 0 ? (
+                          <Badge variant="warning">{mp.yellow_cards}</Badge>
+                        ) : "—"}
+                      </Td>
+                      <Td>
+                        {mp.red_cards > 0 || mp.sent_off ? (
+                          <Badge variant="destructive">{mp.red_cards || (mp.sent_off ? 1 : 0)}</Badge>
+                        ) : "—"}
+                      </Td>
+                      <Td className="text-xs text-muted-foreground">{mp.notes ?? "—"}</Td>
+                    </Tr>
+                  );
+                })}
+                {(matchParts ?? []).length === 0 && (
+                  <Tr><Td colSpan={8} className="text-center text-muted-foreground py-6">لا توجد مشاركات في مباريات</Td></Tr>
+                )}
               </TBody>
             </Table>
           </CardContent>

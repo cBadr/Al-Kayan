@@ -3,11 +3,11 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Table, TBody, THead, Td, Th, Tr } from "@/components/ui/table";
+import { Table, TBody, THead, Th, Tr, Td } from "@/components/ui/table";
 import { createClient } from "@/lib/supabase/server";
 import { requireAcademyManager } from "@/lib/auth/rbac";
-import { formatCurrency } from "@/lib/utils";
-import { createCategory, deleteCategory } from "./actions";
+import { createCategory, deleteCategory, updateCategory, toggleCategoryActive } from "./actions";
+import { CategoryRow } from "./category-row";
 
 export default async function CategoriesPage({ params }: { params: Promise<{ academyId: string }> }) {
   const { academyId } = await params;
@@ -15,9 +15,22 @@ export default async function CategoriesPage({ params }: { params: Promise<{ aca
   const sb = await createClient();
   const { data: cats } = await sb.from("categories").select("*").eq("academy_id", academyId).order("name");
 
+  async function updateAction(id: string, fd: FormData) {
+    "use server";
+    return await updateCategory(academyId, id, fd);
+  }
+  async function deleteAction(id: string) {
+    "use server";
+    return await deleteCategory(academyId, id);
+  }
+  async function toggleAction(id: string, active: boolean) {
+    "use server";
+    await toggleCategoryActive(academyId, id, active);
+  }
+
   return (
     <>
-      <PageHeader title="التصنيفات" description="ناشئين، براعم، كيدز... مع سعر اشتراك مختلف لكل تصنيف" />
+      <PageHeader title="التقسيمات" description="ناشئين، براعم، كيدز... مع سعر اشتراك مختلف لكل تصنيف" />
       <PageBody>
         <Card className="mb-6">
           <CardContent className="pt-6">
@@ -45,23 +58,26 @@ export default async function CategoriesPage({ params }: { params: Promise<{ aca
 
         <Table>
           <THead>
-            <Tr><Th>التصنيف</Th><Th>الاشتراك</Th><Th>الفئة العمرية</Th><Th></Th></Tr>
+            <Tr>
+              <Th>التصنيف</Th>
+              <Th>الاشتراك</Th>
+              <Th>الفئة العمرية</Th>
+              <Th>الحالة</Th>
+              <Th className="text-left">إدارة</Th>
+            </Tr>
           </THead>
           <TBody>
             {(cats ?? []).map((c: any) => (
-              <Tr key={c.id}>
-                <Td className="font-medium">{c.name}</Td>
-                <Td>{formatCurrency(c.monthly_fee)}</Td>
-                <Td>{c.age_min || c.age_max ? `${c.age_min ?? "-"} → ${c.age_max ?? "-"}` : "—"}</Td>
-                <Td className="text-left">
-                  <form action={async () => { "use server"; await deleteCategory(academyId, c.id); }}>
-                    <Button size="sm" variant="ghost" type="submit">حذف</Button>
-                  </form>
-                </Td>
-              </Tr>
+              <CategoryRow
+                key={c.id}
+                cat={c}
+                onUpdate={updateAction}
+                onDelete={deleteAction}
+                onToggle={toggleAction}
+              />
             ))}
             {(cats ?? []).length === 0 && (
-              <Tr><Td colSpan={4} className="text-center text-muted-foreground py-8">لا توجد تصنيفات بعد</Td></Tr>
+              <Tr><Td colSpan={5} className="text-center text-muted-foreground py-8">لا توجد تصنيفات بعد</Td></Tr>
             )}
           </TBody>
         </Table>

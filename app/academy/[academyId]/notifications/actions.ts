@@ -6,6 +6,94 @@ import { requireAcademyManager } from "@/lib/auth/rbac";
 import { Resend } from "resend";
 import { sendWhatsAppText } from "@/lib/whatsapp";
 
+type Recipient = {
+  id: string;
+  user_id: string | null;
+  email: string | null;
+  phone: string | null;
+  full_name: string;
+};
+
+async function resolveRecipients(
+  sb: Awaited<ReturnType<typeof createClient>>,
+  academyId: string,
+  audience: string,
+  fd: FormData,
+): Promise<Recipient[]> {
+  const baseSelect = "id, user_id, email, phone, full_name";
+
+  // Specific players: audience = "players", with form field player_ids (comma-separated or repeated)
+  if (audience === "players") {
+    const ids = (fd.getAll("player_ids") as string[])
+      .flatMap((v) => v.split(","))
+      .map((s) => s.trim())
+      .filter(Boolean);
+    if (ids.length === 0) return [];
+    const { data } = await sb.from("players")
+      .select(baseSelect)
+      .eq("academy_id", academyId)
+      .in("id", ids);
+    return (data ?? []) as Recipient[];
+  }
+
+  // Players with subscription expiring within N days (or overdue if 0)
+  if (audience === "expiring") {
+    const days = Math.max(0, Number(fd.get("expiring_days") ?? "7"));
+    const today = new Date().toISOString().slice(0, 10);
+    const horizon = new Date(Date.now() + days * 86400000).toISOString().slice(0, 10);
+    // Subscriptions due within window AND unpaid/partial.
+    const { data: subs } = await sb.from("subscriptions")
+      .select("player_id, due_date, status")
+      .eq("academy_id", academyId)
+      .in("status", ["unpaid", "partial", "overdue"])
+      .gte("due_date", today)
+      .lte("due_date", horizon);
+    const playerIds = Array.from(new Set((subs ?? []).map((s: any) => s.player_id))).filter(Boolean);
+    if (playerIds.length === 0) return [];
+    const { data } = await sb.from("players")
+      .select(baseSelect)
+      .eq("academy_id", academyId)
+      .eq("status", "active")
+      .in("id", playerIds);
+    return (data ?? []) as Recipient[];
+  }
+
+  // Players with overdue (past due) unpaid subscriptions
+  if (audience === "overdue") {
+    const today = new Date().toISOString().slice(0, 10);
+    const { data: subs } = await sb.from("subscriptions")
+      .select("player_id")
+      .eq("academy_id", academyId)
+      .in("status", ["unpaid", "partial", "overdue"])
+      .lt("due_date", today);
+    const playerIds = Array.from(new Set((subs ?? []).map((s: any) => s.player_id))).filter(Boolean);
+    if (playerIds.length === 0) return [];
+    const { data } = await sb.from("players")
+      .select(baseSelect)
+      .eq("academy_id", academyId)
+      .eq("status", "active")
+      .in("id", playerIds);
+    return (data ?? []) as Recipient[];
+  }
+
+  // Single category
+  if (audience.startsWith("category:")) {
+    const { data } = await sb.from("players")
+      .select(baseSelect)
+      .eq("academy_id", academyId)
+      .eq("status", "active")
+      .eq("category_id", audience.substring("category:".length));
+    return (data ?? []) as Recipient[];
+  }
+
+  // Default: all active players in academy
+  const { data } = await sb.from("players")
+    .select(baseSelect)
+    .eq("academy_id", academyId)
+    .eq("status", "active");
+  return (data ?? []) as Recipient[];
+}
+
 export async function sendNotification(academyId: string, fd: FormData) {
   const me = await requireAcademyManager(academyId);
   const sb = await createClient();
@@ -15,19 +103,20 @@ export async function sendNotification(academyId: string, fd: FormData) {
   const body = String(fd.get("body") ?? "").trim();
   if (!title) return { error: "أدخل عنواناً" };
 
-  // Resolve recipients
-  const playersQ = sb.from("players").select("id, user_id, email, full_name").eq("academy_id", academyId).eq("status", "active");
-  if (audience.startsWith("category:")) {
-    playersQ.eq("category_id", audience.substring("category:".length));
-  }
-  const { data: players } = await playersQ;
-  const recipients = (players ?? []) as any[];
+  const recipients = await resolveRecipients(sb, academyId, audience, fd);
 
-  // Insert ONE summary row representing the broadcast (recipient_user_id = null)
+  // Build a human-readable group label for logging
+  let groupLabel = audience;
+  if (audience === "expiring") groupLabel = `expiring:${fd.get("expiring_days") ?? 7}d`;
+  if (audience === "players") {
+    const ids = (fd.getAll("player_ids") as string[]).flatMap((v) => v.split(",")).filter(Boolean);
+    groupLabel = `players:${ids.length}`;
+  }
+
   const { data: summary } = await sb.from("notifications").insert({
     academy_id: academyId,
     recipient_user_id: null,
-    recipient_group: audience,
+    recipient_group: groupLabel,
     channel,
     title,
     body: body || null,
@@ -35,13 +124,12 @@ export async function sendNotification(academyId: string, fd: FormData) {
     status: "queued",
   }).select("id").single();
 
-  // Insert ONE personal row per recipient that has a user account, so /me shows it
   const personal = recipients
     .filter((r) => r.user_id)
     .map((r) => ({
       academy_id: academyId,
       recipient_user_id: r.user_id,
-      recipient_group: audience,
+      recipient_group: groupLabel,
       channel,
       title,
       body: body || null,
@@ -51,7 +139,6 @@ export async function sendNotification(academyId: string, fd: FormData) {
     }));
   if (personal.length > 0) await sb.from("notifications").insert(personal);
 
-  // Send WhatsApp messages if needed
   if (channel === "whatsapp") {
     for (const p of recipients) {
       if (!p.phone) continue;
@@ -59,7 +146,6 @@ export async function sendNotification(academyId: string, fd: FormData) {
     }
   }
 
-  // Send emails if needed
   if (channel === "email" && process.env.RESEND_API_KEY) {
     const resend = new Resend(process.env.RESEND_API_KEY);
     const from = process.env.RESEND_FROM_EMAIL || "noreply@example.com";
@@ -74,14 +160,13 @@ export async function sendNotification(academyId: string, fd: FormData) {
     }
   }
 
-  // Mark summary as sent
   if (summary) {
     await sb.from("notifications").update({ status: "sent", sent_at: new Date().toISOString() }).eq("id", summary.id);
   }
 
   await sb.from("audit_log").insert({
     academy_id: academyId, actor_user_id: me.id, action: "notifications.send",
-    metadata: { audience, channel, title, count: recipients.length },
+    metadata: { audience: groupLabel, channel, title, count: recipients.length },
   });
 
   revalidatePath(`/academy/${academyId}/notifications`);

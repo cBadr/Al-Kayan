@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { setParticipation, removeParticipation, logInjury } from "../actions";
 
 interface PlayerLite { id: string; code: string; full_name: string; category_id: string | null; categories?: { name: string } | null }
-interface Part { id: string; player_id: string; goals: number; yellow_cards: number; red_cards: number; sent_off: boolean; notes: string | null }
+interface Part { id: string; player_id: string; goals: number; yellow_cards: number; red_cards: number; sent_off: boolean; minutes_played: number; notes: string | null }
 
 export function ParticipationManager({
   academyId, matchId, players, participations,
@@ -66,6 +66,7 @@ export function ParticipationManager({
                 {isIn && (
                   <div className="flex flex-wrap gap-2 items-center text-xs">
                     <Stat label="أهداف" defaultValue={part!.goals} onCommit={(v) => update(p.id, { goals: v })} />
+                    <Stat label="دقائق" defaultValue={part!.minutes_played ?? 0} onCommit={(v) => update(p.id, { minutes_played: v })} />
                     <Stat label="صفراء" defaultValue={part!.yellow_cards} onCommit={(v) => update(p.id, { yellow_cards: v })} />
                     <Stat label="حمراء" defaultValue={part!.red_cards} onCommit={(v) => update(p.id, { red_cards: v })} />
                     <label className="flex items-center gap-1">
