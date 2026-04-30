@@ -1,15 +1,35 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { setAttendance, overrideLock } from "./actions";
+import { setAttendance, clearAttendance, overrideLock, markAllPresent } from "./actions";
 
-type Status = "present" | "absent" | "late";
+type Status = "present" | "absent" | "late" | "excused";
 
-interface PlayerLite { id: string; code: string; full_name: string }
+interface PlayerLite {
+  id: string;
+  code: string;
+  full_name: string;
+  notes?: string | null;
+  photo_url?: string | null;
+}
 interface ExistingRow { player_id: string; status: Status; locked_at: string }
+
+const LABELS: Record<Status, string> = {
+  present: "حاضر",
+  absent: "غائب",
+  late: "متأخر",
+  excused: "بعذر",
+};
+
+// Buttons render right-to-left as in screenshot: حاضر | غائب | متأخر | بعذر
+const ORDER: Status[] = ["present", "absent", "late", "excused"];
+
+const STATUS_TONE: Record<Status, { bg: string; text: string; ring: string }> = {
+  present:  { bg: "bg-emerald-600",  text: "text-white",        ring: "ring-emerald-500/60" },
+  absent:   { bg: "bg-red-600",      text: "text-white",        ring: "ring-red-500/60" },
+  late:     { bg: "bg-amber-500",    text: "text-white",        ring: "ring-amber-400/60" },
+  excused:  { bg: "bg-sky-600",      text: "text-white",        ring: "ring-sky-500/60" },
+};
 
 export function AttendanceGrid({
   academyId, trainingId, players, existing, isManager,
@@ -20,9 +40,14 @@ export function AttendanceGrid({
   existing: ExistingRow[];
   isManager: boolean;
 }) {
-  const map = new Map(existing.map((e) => [e.player_id, e]));
+  // Local state for optimistic updates
+  const [state, setState] = useState<Record<string, ExistingRow | undefined>>(() => {
+    const m: Record<string, ExistingRow | undefined> = {};
+    for (const e of existing) m[e.player_id] = e;
+    return m;
+  });
   const [pending, startTransition] = useTransition();
-  const [busy, setBusy] = useState<string | null>(null);
+  const [busy, setBusy] = useState<Set<string>>(new Set());
 
   const isLocked = (e?: ExistingRow) => {
     if (!e) return false;
@@ -30,76 +55,152 @@ export function AttendanceGrid({
   };
 
   function pick(playerId: string, status: Status) {
-    setBusy(playerId);
+    const cur = state[playerId];
+    // Toggle off if same status clicked
+    if (cur?.status === status) return clearStatus(playerId);
+
+    // Optimistic
+    setState((s) => ({
+      ...s,
+      [playerId]: {
+        player_id: playerId,
+        status,
+        locked_at: cur?.locked_at ?? new Date(Date.now() + 25 * 60 * 1000).toISOString(),
+      },
+    }));
+    setBusy((b) => new Set(b).add(playerId));
     startTransition(async () => {
-      await setAttendance(academyId, trainingId, playerId, status);
-      setBusy(null);
+      const res = await setAttendance(academyId, trainingId, playerId, status);
+      if (res && "error" in res && res.error) {
+        // Revert
+        setState((s) => ({ ...s, [playerId]: cur }));
+        alert(res.error);
+      }
+      setBusy((b) => { const n = new Set(b); n.delete(playerId); return n; });
+    });
+  }
+
+  function clearStatus(playerId: string) {
+    const cur = state[playerId];
+    setState((s) => ({ ...s, [playerId]: undefined }));
+    setBusy((b) => new Set(b).add(playerId));
+    startTransition(async () => {
+      const res = await clearAttendance(academyId, trainingId, playerId);
+      if (res && "error" in res && res.error) {
+        setState((s) => ({ ...s, [playerId]: cur }));
+        alert(res.error);
+      }
+      setBusy((b) => { const n = new Set(b); n.delete(playerId); return n; });
+    });
+  }
+
+  function presentAll() {
+    if (!confirm("تسجيل جميع اللاعبين غير المُعلَّمين كـ \"حاضر\"؟")) return;
+    const unmarked = players.filter((p) => !state[p.id]).map((p) => p.id);
+    if (unmarked.length === 0) return;
+    // Optimistic
+    setState((s) => {
+      const next = { ...s };
+      const lockAt = new Date(Date.now() + 25 * 60 * 1000).toISOString();
+      for (const id of unmarked) next[id] = { player_id: id, status: "present", locked_at: lockAt };
+      return next;
+    });
+    startTransition(async () => {
+      await markAllPresent(academyId, trainingId, unmarked);
     });
   }
 
   return (
-    <Card>
-      <CardContent className="pt-6">
-        <p className="text-sm text-muted-foreground mb-4">
-          اضغط على حالة لكل لاعب. ينقفل التعديل بعد انتهاء النافذة الزمنية المحددة في إعدادات الأكاديمية.
-          {isManager && " (لديك صلاحية فتح القفل)"}
+    <div>
+      <div className="flex items-center justify-between mb-3">
+        <p className="text-xs text-muted-foreground">
+          اضغط على حالة لتسجيلها فوراً. اضغط مرة أخرى لإلغائها.
         </p>
-        <ul className="divide-y divide-border">
-          {players.map((p) => {
-            const cur = map.get(p.id);
-            const locked = isLocked(cur);
-            const minutesLeft = cur ? Math.max(0, Math.round((new Date(cur.locked_at).getTime() - Date.now()) / 60000)) : null;
-            return (
-              <li key={p.id} className="py-3 flex flex-wrap items-center justify-between gap-3">
-                <div className="flex items-center gap-3 flex-1 min-w-0">
-                  <span className="font-mono text-xs text-muted-foreground ltr-numbers">{p.code}</span>
-                  <span className="font-medium truncate">{p.full_name}</span>
-                  {cur && (
-                    <Badge variant={cur.status === "present" ? "success" : cur.status === "late" ? "warning" : "destructive"}>
-                      {cur.status === "present" ? "حاضر" : cur.status === "late" ? "متأخر" : "غائب"}
-                    </Badge>
-                  )}
-                  {cur && minutesLeft !== null && minutesLeft > 0 && (
-                    <span className="text-xs text-muted-foreground">قابل للتعديل: {minutesLeft}د</span>
-                  )}
-                </div>
-                <div className="flex gap-1.5">
-                  <Btn label="حاضر" tone="success" disabled={locked || (busy === p.id && pending)} active={cur?.status === "present"}
-                       onClick={() => pick(p.id, "present")} />
-                  <Btn label="متأخر" tone="warning" disabled={locked || (busy === p.id && pending)} active={cur?.status === "late"}
-                       onClick={() => pick(p.id, "late")} />
-                  <Btn label="غائب" tone="destructive" disabled={locked || (busy === p.id && pending)} active={cur?.status === "absent"}
-                       onClick={() => pick(p.id, "absent")} />
-                  {locked && isManager && (
-                    <form action={async () => { await overrideLock(academyId, trainingId, p.id); }}>
-                      <Button type="submit" size="sm" variant="outline">فتح القفل</Button>
-                    </form>
-                  )}
-                </div>
-              </li>
-            );
-          })}
-          {players.length === 0 && <li className="py-6 text-center text-muted-foreground">لا يوجد لاعبون في هذا التصنيف</li>}
-        </ul>
-      </CardContent>
-    </Card>
-  );
-}
+        <button
+          type="button"
+          onClick={presentAll}
+          disabled={pending}
+          className="text-xs font-semibold text-emerald-700 hover:text-emerald-900 px-3 py-1.5 rounded-md border border-emerald-700/30 bg-white hover:bg-emerald-50"
+        >
+          ✅ تحضير الجميع
+        </button>
+      </div>
 
-function Btn({ label, tone, active, onClick, disabled }: {
-  label: string; tone: "success" | "warning" | "destructive"; active?: boolean; onClick: () => void; disabled?: boolean;
-}) {
-  const base = "h-9 px-3 text-xs rounded-md border font-medium transition-colors disabled:opacity-50";
-  const styles = active
-    ? tone === "success"
-      ? "bg-success text-white border-success"
-      : tone === "warning"
-      ? "bg-warning text-white border-warning"
-      : "bg-destructive text-white border-destructive"
-    : tone === "success"
-    ? "border-success text-success hover:bg-success/10"
-    : tone === "warning"
-    ? "border-warning text-warning hover:bg-warning/10"
-    : "border-destructive text-destructive hover:bg-destructive/10";
-  return <button type="button" className={`${base} ${styles}`} onClick={onClick} disabled={disabled}>{label}</button>;
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
+        {players.map((p, idx) => {
+          const cur = state[p.id];
+          const locked = isLocked(cur);
+          const isBusy = busy.has(p.id);
+          const minutesLeft = cur ? Math.max(0, Math.round((new Date(cur.locked_at).getTime() - Date.now()) / 60000)) : null;
+
+          return (
+            <div
+              key={p.id}
+              className={`rounded-xl border bg-white p-3 transition-shadow ${
+                cur ? "border-emerald-200 shadow-sm" : "border-border"
+              } ${isBusy ? "opacity-70" : ""}`}
+            >
+              <div className="flex items-start gap-3 mb-3">
+                <div className="shrink-0 w-9 h-9 rounded-lg bg-gold-400 text-emerald-950 font-black flex items-center justify-center text-sm ltr-numbers">
+                  {idx + 1}
+                </div>
+                <div className="flex-1 min-w-0 text-right">
+                  <div className="font-bold text-emerald-950 truncate">{p.full_name}</div>
+                  <div className="text-xs text-muted-foreground truncate">
+                    {p.notes || `كود: ${p.code}`}
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-4 gap-1.5">
+                {ORDER.map((s) => {
+                  const active = cur?.status === s;
+                  const tone = STATUS_TONE[s];
+                  return (
+                    <button
+                      key={s}
+                      type="button"
+                      onClick={() => pick(p.id, s)}
+                      disabled={locked || isBusy}
+                      aria-pressed={active}
+                      className={[
+                        "h-10 rounded-lg text-xs font-bold transition-all",
+                        "flex items-center justify-center gap-1",
+                        active
+                          ? `${tone.bg} ${tone.text} shadow-sm`
+                          : "bg-muted/40 text-muted-foreground hover:bg-muted",
+                        "disabled:opacity-50 disabled:cursor-not-allowed",
+                      ].join(" ")}
+                    >
+                      {LABELS[s]}
+                    </button>
+                  );
+                })}
+              </div>
+
+              {cur && minutesLeft !== null && minutesLeft > 0 && !locked && (
+                <p className="text-[10px] text-muted-foreground mt-2 text-center">
+                  قابل للتعديل: {minutesLeft}د
+                </p>
+              )}
+              {locked && isManager && (
+                <form action={async () => { await overrideLock(academyId, trainingId, p.id); }} className="mt-2">
+                  <button type="submit" className="w-full text-xs text-emerald-700 hover:underline">
+                    🔓 فتح القفل
+                  </button>
+                </form>
+              )}
+              {locked && !isManager && (
+                <p className="text-[10px] text-red-600 mt-2 text-center">🔒 مقفل</p>
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      {players.length === 0 && (
+        <div className="text-center py-12 text-muted-foreground">لا يوجد لاعبون في هذا التصنيف</div>
+      )}
+    </div>
+  );
 }
