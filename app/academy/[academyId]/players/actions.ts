@@ -16,6 +16,8 @@ const playerSchema = z.object({
   national_id: z.string().optional().or(z.literal("")),
   guardian_name: z.string().optional().or(z.literal("")),
   guardian_phone: z.string().optional().or(z.literal("")),
+  position: z.enum(["GK", "DF", "MF", "FW"]).optional().or(z.literal("")),
+  preferred_jersey: z.coerce.number().int().min(1).max(99).optional().or(z.literal("")),
 });
 
 async function uploadPhoto(academyId: string, fd: FormData, key: string) {
@@ -50,6 +52,8 @@ export async function createPlayer(academyId: string, fd: FormData) {
     national_id: parsed.data.national_id || null,
     guardian_name: parsed.data.guardian_name || null,
     guardian_phone: parsed.data.guardian_phone || null,
+    position: parsed.data.position || null,
+    preferred_jersey: parsed.data.preferred_jersey || null,
     photo_url: photoPath,
   }).select("id").single();
 
@@ -73,6 +77,8 @@ export async function updatePlayer(academyId: string, playerId: string, fd: Form
     national_id: parsed.data.national_id || null,
     guardian_name: parsed.data.guardian_name || null,
     guardian_phone: parsed.data.guardian_phone || null,
+    position: parsed.data.position || null,
+    preferred_jersey: parsed.data.preferred_jersey || null,
     status: (fd.get("status") as string) || undefined,
   };
 

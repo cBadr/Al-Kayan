@@ -8,7 +8,6 @@ import { requireAcademyAccess } from "@/lib/auth/rbac";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { signedUrl } from "@/lib/storage";
 import Link from "next/link";
-import { PrintExport } from "@/components/print-export";
 import { AttendanceTrend } from "@/components/attendance-trend";
 
 export default async function PlayerProfilePage({ params }: { params: Promise<{ academyId: string; playerId: string }> }) {
@@ -50,7 +49,9 @@ export default async function PlayerProfilePage({ params }: { params: Promise<{ 
             <Button asChild variant="gold">
               <Link href={`/academy/${academyId}/players/${playerId}/card`}>بطاقة العضوية</Link>
             </Button>
-            <PrintExport filename={`player-${p.code}-${p.full_name}`} />
+            <Button asChild variant="outline">
+              <Link href={`/academy/${academyId}/players/${playerId}/print`}>🖨 طباعة الملف</Link>
+            </Button>
           </>
         }
       />

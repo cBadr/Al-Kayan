@@ -68,6 +68,17 @@ export default async function NewPlayerPage({ params }: { params: Promise<{ acad
               <F name="national_id" label="الرقم القومي" dir="ltr" required={isReq("national_id")} />
               <F name="guardian_name" label="اسم ولي الأمر" required={isReq("guardian_name")} />
               <F name="guardian_phone" label="هاتف ولي الأمر" dir="ltr" required={isReq("guardian_phone")} />
+              <div className="space-y-1.5">
+                <Label htmlFor="position">المركز</Label>
+                <select id="position" name="position" className="w-full h-10 rounded-md border border-border bg-card px-3 text-sm">
+                  <option value="">— غير محدد —</option>
+                  <option value="GK">حارس مرمى</option>
+                  <option value="DF">دفاع</option>
+                  <option value="MF">وسط</option>
+                  <option value="FW">هجوم</option>
+                </select>
+              </div>
+              <F name="preferred_jersey" label="رقم القميص" type="number" min={1} max={99} />
               <div className="space-y-1.5 md:col-span-2">
                 <Label htmlFor="photo">الصورة الشخصية</Label>
                 <Input id="photo" name="photo" type="file" accept="image/*" />

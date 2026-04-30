@@ -58,6 +58,17 @@ export default async function EditPlayerPage({ params }: { params: Promise<{ aca
               <F name="guardian_name" label="اسم ولي الأمر" defaultValue={p.guardian_name ?? ""} />
               <F name="guardian_phone" label="هاتف ولي الأمر" dir="ltr" defaultValue={p.guardian_phone ?? ""} />
               <div className="space-y-1.5">
+                <Label htmlFor="position">المركز</Label>
+                <select id="position" name="position" defaultValue={p.position ?? ""} className="w-full h-10 rounded-md border border-border bg-card px-3 text-sm">
+                  <option value="">— غير محدد —</option>
+                  <option value="GK">حارس مرمى</option>
+                  <option value="DF">دفاع</option>
+                  <option value="MF">وسط</option>
+                  <option value="FW">هجوم</option>
+                </select>
+              </div>
+              <F name="preferred_jersey" label="رقم القميص" type="number" min={1} max={99} defaultValue={p.preferred_jersey ?? ""} />
+              <div className="space-y-1.5">
                 <Label htmlFor="status">الحالة</Label>
                 <select id="status" name="status" defaultValue={p.status} className="w-full h-10 rounded-md border border-border bg-card px-3 text-sm">
                   <option value="active">نشط</option>

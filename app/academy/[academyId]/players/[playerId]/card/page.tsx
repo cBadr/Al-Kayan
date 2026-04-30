@@ -6,6 +6,8 @@ import { PrintExport } from "@/components/print-export";
 import { formatDate } from "@/lib/utils";
 import QRCode from "qrcode";
 import { headers } from "next/headers";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
 
 export default async function PlayerCardPage({ params }: { params: Promise<{ academyId: string; playerId: string }> }) {
   const { academyId, playerId } = await params;
@@ -27,8 +29,13 @@ export default async function PlayerCardPage({ params }: { params: Promise<{ aca
 
   return (
     <div className="bg-pitch min-h-screen">
-      <div className="no-print p-4 border-b border-border bg-white flex justify-between items-center">
-        <h1 className="font-bold text-lg">بطاقة عضوية اللاعب</h1>
+      <div className="no-print p-4 border-b border-border bg-white flex justify-between items-center gap-3">
+        <div className="flex items-center gap-3">
+          <Button asChild variant="outline" size="sm">
+            <Link href={`/academy/${academyId}/players/${playerId}`}>← العودة</Link>
+          </Button>
+          <h1 className="font-bold text-lg">بطاقة عضوية اللاعب</h1>
+        </div>
         <PrintExport filename={`card-${p.code}-${p.full_name}`} />
       </div>
 
