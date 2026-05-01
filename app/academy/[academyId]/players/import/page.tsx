@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { requireAcademyManager } from "@/lib/auth/rbac";
 import { createClient } from "@/lib/supabase/server";
 import { importPlayersCsv } from "./actions";
+import { DownloadTemplate } from "./download-template";
 import Link from "next/link";
 
 export default async function ImportPlayersPage({ params, searchParams }: {
@@ -65,21 +66,23 @@ export default async function ImportPlayersPage({ params, searchParams }: {
             <CardHeader><CardTitle>صيغة الملف</CardTitle></CardHeader>
             <CardContent className="text-sm text-muted-foreground space-y-3">
               <p>الأعمدة المدعومة (السطر الأول = العناوين):</p>
-              <code className="block bg-muted/50 p-3 rounded-md text-xs leading-loose ltr-numbers font-mono" dir="ltr">
-                full_name,birth_date,phone,email,national_id,guardian_name,guardian_phone,category
+              <code className="block bg-muted/50 p-3 rounded-md text-[10px] leading-relaxed ltr-numbers font-mono break-all" dir="ltr">
+                full_name, birth_date, phone, email, national_id, guardian_name, guardian_phone, category, position, preferred_jersey, status, notes
               </code>
-              <ul className="list-disc list-inside space-y-1 text-xs">
-                <li><strong>full_name</strong> إجباري</li>
-                <li><strong>birth_date</strong> بصيغة <span dir="ltr">YYYY-MM-DD</span></li>
-                <li><strong>category</strong> اسم التصنيف (يطابق التصنيفات الموجودة)</li>
-                <li>لو ما حُدِّد التصنيف في الصف يستخدم الافتراضي</li>
-                <li>الكود يُولَّد تلقائياً</li>
+              <ul className="list-disc list-inside space-y-1.5 text-xs">
+                <li><strong>full_name</strong> — إجباري (الاسم رباعي)</li>
+                <li><strong>birth_date</strong> — بصيغة <span dir="ltr" className="font-mono">YYYY-MM-DD</span></li>
+                <li><strong>phone</strong> / <strong>email</strong> / <strong>national_id</strong> — اختيارية</li>
+                <li><strong>guardian_name</strong> / <strong>guardian_phone</strong> — بيانات ولي الأمر</li>
+                <li><strong>category</strong> — اسم التصنيف (يطابق الموجود حرفياً)؛ لو فارغ يُستخدم الافتراضي</li>
+                <li><strong>position</strong> — <span dir="ltr" className="font-mono">GK/DF/MF/FW</span> أو "حارس/دفاع/وسط/هجوم"</li>
+                <li><strong>preferred_jersey</strong> — رقم بين 1 و 99</li>
+                <li><strong>status</strong> — <span dir="ltr" className="font-mono">active/suspended/archived</span> (الافتراضي نشط)</li>
+                <li><strong>notes</strong> — ملاحظات إدارية</li>
+                <li>الكود (000001+) يُولَّد تلقائياً عند الحفظ</li>
+                <li>الحقول التي تحتوي فاصلة أو سطراً جديداً يجب أن تكون بين علامتي تنصيص <code dir="ltr">"</code></li>
               </ul>
-              <a href="data:text/csv;charset=utf-8,full_name,birth_date,phone,email,guardian_name,guardian_phone,category%0Aمحمد علي,2015-03-12,01000000001,,أبو محمد,01200000001,كيدز"
-                 download="players-template.csv"
-                 className="inline-block text-emerald-700 hover:underline font-semibold text-sm">
-                ⬇ تحميل قالب فارغ
-              </a>
+              <DownloadTemplate categories={(cats ?? []) as any} />
             </CardContent>
           </Card>
         </div>

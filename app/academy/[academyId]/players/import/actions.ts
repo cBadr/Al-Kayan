@@ -64,16 +64,44 @@ export async function importPlayersCsv(academyId: string, fd: FormData) {
     const catName = idx("category") >= 0 ? (r[idx("category")] ?? "").trim() : "";
     const categoryId = catName ? (catMap.get(catName) ?? defaultCategory) : defaultCategory;
 
+    const get = (k: string) => idx(k) >= 0 ? (r[idx(k)] ?? "").trim() || null : null;
+
+    // Position normalization: accept code (GK/DF/MF/FW) or Arabic name
+    const POS_MAP: Record<string, "GK" | "DF" | "MF" | "FW"> = {
+      gk: "GK", df: "DF", mf: "MF", fw: "FW",
+      "حارس": "GK", "حارس مرمى": "GK",
+      "دفاع": "DF", "مدافع": "DF",
+      "وسط": "MF", "لاعب وسط": "MF",
+      "هجوم": "FW", "مهاجم": "FW",
+    };
+    const rawPos = get("position");
+    const position = rawPos ? (POS_MAP[rawPos.toLowerCase()] ?? POS_MAP[rawPos] ?? null) : null;
+
+    // Status normalization
+    const STATUS_MAP: Record<string, "active" | "suspended" | "archived"> = {
+      active: "active", suspended: "suspended", archived: "archived",
+      "نشط": "active", "موقوف": "suspended", "مؤرشف": "archived",
+    };
+    const rawStatus = get("status");
+    const status = rawStatus ? (STATUS_MAP[rawStatus.toLowerCase()] ?? STATUS_MAP[rawStatus] ?? "active") : "active";
+
+    const jersey = get("preferred_jersey");
+    const jerseyNum = jersey ? Number(jersey) : null;
+
     inserts.push({
       academy_id: academyId,
       full_name: name,
       category_id: categoryId,
-      birth_date: idx("birth_date") >= 0 ? (r[idx("birth_date")] || null) : null,
-      phone: idx("phone") >= 0 ? (r[idx("phone")] || null) : null,
-      email: idx("email") >= 0 ? (r[idx("email")] || null) : null,
-      national_id: idx("national_id") >= 0 ? (r[idx("national_id")] || null) : null,
-      guardian_name: idx("guardian_name") >= 0 ? (r[idx("guardian_name")] || null) : null,
-      guardian_phone: idx("guardian_phone") >= 0 ? (r[idx("guardian_phone")] || null) : null,
+      birth_date: get("birth_date"),
+      phone: get("phone"),
+      email: get("email"),
+      national_id: get("national_id"),
+      guardian_name: get("guardian_name"),
+      guardian_phone: get("guardian_phone"),
+      position,
+      preferred_jersey: jerseyNum && Number.isFinite(jerseyNum) && jerseyNum >= 1 && jerseyNum <= 99 ? jerseyNum : null,
+      notes: get("notes"),
+      status,
     });
   }
 
