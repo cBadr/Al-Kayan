@@ -7,6 +7,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getCurrentUser } from "@/lib/auth/rbac";
 import { redirect } from "next/navigation";
 import { createPlayer } from "../actions";
+import { CredentialsFields } from "./credentials-fields";
 
 export default async function NewPlayerPage({ params }: { params: Promise<{ academyId: string }> }) {
   const { academyId } = await params;
@@ -64,7 +65,6 @@ export default async function NewPlayerPage({ params }: { params: Promise<{ acad
               </div>
               <F name="birth_date" label="تاريخ الميلاد" type="date" required={isReq("birth_date")} />
               <F name="phone" label="الهاتف" dir="ltr" required={isReq("phone")} />
-              <F name="email" label="البريد الإلكتروني" type="email" dir="ltr" required={isReq("email")} />
               <F name="national_id" label="الرقم القومي" dir="ltr" required={isReq("national_id")} />
               <F name="guardian_name" label="اسم ولي الأمر" required={isReq("guardian_name")} />
               <F name="guardian_phone" label="هاتف ولي الأمر" dir="ltr" required={isReq("guardian_phone")} />
@@ -83,6 +83,8 @@ export default async function NewPlayerPage({ params }: { params: Promise<{ acad
                 <Label htmlFor="photo">الصورة الشخصية</Label>
                 <Input id="photo" name="photo" type="file" accept="image/*" />
               </div>
+
+              <CredentialsFields />
               <div className="md:col-span-2 flex justify-end">
                 <Button type="submit">حفظ — توليد كود وإيصال السداد الأول</Button>
               </div>

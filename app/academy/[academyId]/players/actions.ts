@@ -39,6 +39,12 @@ export async function createPlayer(academyId: string, fd: FormData) {
   const parsed = playerSchema.safeParse(Object.fromEntries(fd));
   if (!parsed.success) return { error: parsed.error.issues[0]?.message };
 
+  // Login credentials are required so the player can sign in immediately.
+  const email = String(fd.get("email") ?? "").trim().toLowerCase();
+  const password = String(fd.get("password") ?? "");
+  if (!email) return { error: "البريد الإلكتروني مطلوب لإنشاء حساب الدخول" };
+  if (password.length < 8) return { error: "كلمة المرور يجب أن تكون 8 أحرف فأكثر" };
+
   const photoPath = await uploadPhoto(academyId, fd, "photo");
 
   const sb = await createClient();
@@ -48,7 +54,7 @@ export async function createPlayer(academyId: string, fd: FormData) {
     category_id: parsed.data.category_id || null,
     birth_date: parsed.data.birth_date || null,
     phone: parsed.data.phone || null,
-    email: parsed.data.email || null,
+    email,
     national_id: parsed.data.national_id || null,
     guardian_name: parsed.data.guardian_name || null,
     guardian_phone: parsed.data.guardian_phone || null,
@@ -58,6 +64,16 @@ export async function createPlayer(academyId: string, fd: FormData) {
   }).select("id").single();
 
   if (error) return { error: error.message };
+
+  // Provision login account + link it. Reuses the idempotent invitePlayer flow
+  // which handles "email already exists" gracefully (resets password instead).
+  const inviteRes = await invitePlayer(academyId, data!.id, email, password);
+  if (inviteRes.error) {
+    // Player record exists but login provisioning failed — surface a clear error
+    // to the admin without rolling back the player (they can retry from edit).
+    return { error: `تم إنشاء اللاعب لكن تعذَّر إنشاء حساب الدخول: ${inviteRes.error}` };
+  }
+
   revalidatePath(`/academy/${academyId}/players`);
   redirect(`/academy/${academyId}/players/${data!.id}`);
 }
