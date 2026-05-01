@@ -303,6 +303,37 @@ html, body {
   border-radius: 9999px;
 }
 
+/* ----------------------------------------------------------------
+   Responsive table behavior (works at all sizes; tighter on mobile)
+   ---------------------------------------------------------------- */
+
+/* Any container that can scroll horizontally gets a subtle gradient
+   on its right edge so the user knows there's more content. */
+.overflow-x-auto, .overflow-auto {
+  position: relative;
+}
+.overflow-x-auto::after, .overflow-auto::after {
+  content: "";
+  position: absolute;
+  top: 0; bottom: 0; left: 0;
+  width: 28px;
+  pointer-events: none;
+  background: linear-gradient(to left, rgba(255,255,255,0) 0%, rgba(15,38,30,0.06) 70%, rgba(15,38,30,0.10) 100%);
+  opacity: 0;
+  transition: opacity .2s;
+}
+@media (max-width: 1024px) {
+  /* Show the scroll-hint gradient automatically on smaller screens */
+  .overflow-x-auto::after, .overflow-auto::after { opacity: 1; }
+}
+
+/* Tables: prevent column-wrapping that breaks layout — let users scroll horizontally.
+   Cells stay on one line; the parent <div className="overflow-auto"> handles scrolling. */
+table { width: 100%; }
+table th, table td { white-space: nowrap; }
+/* Allow wrapping for cells explicitly opted in */
+table .cell-wrap, table .cell-wrap * { white-space: normal; }
+
 /* Mobile responsive defaults */
 @media (max-width: 640px) {
   /* Hero numbers shrink so they don't overflow on small screens */
@@ -314,14 +345,22 @@ html, body {
   .stat-card .text-3xl { font-size: 1.5rem !important; }
   /* Tighten card padding */
   .card-premium, .rounded-2xl > .pt-6 { padding-top: 1rem !important; }
-  /* Tables: keep display:table but reduce padding so they fit better */
-  table th, table td { padding: 0.5rem 0.4rem !important; font-size: 0.8rem !important; }
-  /* Reduce sidebar nav font in MobileNav (handled by component) */
+  /* Tables: tighter padding + smaller font on mobile so more columns fit */
+  table th, table td { padding: 0.5rem 0.55rem !important; font-size: 0.78rem !important; }
+  table th { font-size: 0.7rem !important; }
   /* PageHeader gap */
   .px-6.md\:px-8 { padding-left: 1rem !important; padding-right: 1rem !important; }
   .py-5.md\:py-6 { padding-top: 0.75rem !important; padding-bottom: 0.75rem !important; }
   /* Force form fields full width on mobile */
   .min-w-48, .min-w-44, .min-w-32 { min-width: 100% !important; }
+  /* PageBody padding tighter */
+  .p-4.md\:p-8 { padding: 0.75rem !important; }
+}
+
+/* Print: re-enable wrapping inside tables so all columns fit on the page */
+@media print {
+  table th, table td { white-space: normal !important; }
+  .overflow-x-auto::after, .overflow-auto::after { display: none !important; }
 }
 
 /* Print */

@@ -124,8 +124,8 @@ export function TrainingsTable({
           </select>
         </div>
 
-        {/* Table */}
-        <div className="overflow-x-auto">
+        {/* Desktop / tablet table */}
+        <div className="hidden sm:block overflow-x-auto">
           <table className="w-full text-sm border-collapse">
             <thead>
               <tr className="bg-emerald-50 text-right">
@@ -179,6 +179,50 @@ export function TrainingsTable({
             </tbody>
           </table>
         </div>
+
+        {/* Mobile cards */}
+        <ul className="sm:hidden space-y-2">
+          {filtered.length === 0 ? (
+            <li className="text-center text-muted-foreground py-8">لا توجد تدريبات</li>
+          ) : filtered.map((t) => {
+            const isFuture = new Date(t.scheduled_at).getTime() > Date.now();
+            const isSel = selected.has(t.id);
+            return (
+              <li
+                key={t.id}
+                className={`bg-white border rounded-xl p-3 flex items-start gap-3 ${
+                  isSel ? "border-emerald-400 ring-1 ring-emerald-200" : "border-border"
+                }`}
+              >
+                <input
+                  type="checkbox"
+                  checked={isSel}
+                  onChange={() => toggle(t.id)}
+                  className="w-4 h-4 mt-1.5 shrink-0"
+                />
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-start justify-between gap-2 flex-wrap">
+                    <div className="font-bold text-emerald-950">
+                      {formatDate(t.scheduled_at, true)}
+                    </div>
+                    <div className="flex items-center gap-1">
+                      {isFuture && <span className="text-[10px] bg-amber-100 text-amber-800 px-1.5 py-0.5 rounded">قادم</span>}
+                      <span className="text-[10px] bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded ltr-numbers">{t.duration_min} د</span>
+                    </div>
+                  </div>
+                  <div className="text-xs text-muted-foreground mt-0.5">
+                    {t.categories?.name ?? "بدون تصنيف"}
+                    {t.location && <> · 📍 {t.location}</>}
+                  </div>
+                  <div className="flex gap-3 mt-2 no-print">
+                    <Link href={`/academy/${academyId}/attendance?training=${t.id}`} className="text-emerald-700 text-xs font-semibold hover:underline">حضور</Link>
+                    <Link href={`/academy/${academyId}/trainings?edit=${t.id}`} className="text-amber-600 text-xs font-semibold hover:underline">تعديل</Link>
+                  </div>
+                </div>
+              </li>
+            );
+          })}
+        </ul>
       </CardContent>
     </Card>
   );

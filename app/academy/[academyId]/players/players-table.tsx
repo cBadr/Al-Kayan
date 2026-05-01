@@ -145,78 +145,141 @@ export function PlayersTable({
         </div>
       )}
 
-      <Table>
-        <THead>
-          <Tr>
-            {isManager && (
-              <Th className="w-10 text-center">
-                <input
-                  type="checkbox"
-                  checked={allChecked}
-                  ref={(el) => { if (el) el.indeterminate = someChecked; }}
-                  onChange={toggleAll}
-                  className="w-4 h-4"
-                />
-              </Th>
-            )}
-            <Th>الصورة</Th>
-            <Th>الكود</Th>
-            <Th>الاسم</Th>
-            <Th>التصنيف</Th>
-            <Th>الهاتف</Th>
-            <Th>الحالة</Th>
-            <Th></Th>
-          </Tr>
-        </THead>
-        <TBody>
-          {players.map((p) => {
-            const photo = p.photo_url ? photoMap[p.photo_url] : null;
-            const isSelected = selected.has(p.id);
-            return (
-              <Tr key={p.id} className={isSelected ? "bg-emerald-50/40" : ""}>
-                {isManager && (
-                  <Td className="text-center">
-                    <input
-                      type="checkbox"
-                      checked={isSelected}
-                      onChange={() => toggle(p.id)}
-                      className="w-4 h-4"
-                    />
-                  </Td>
-                )}
-                <Td>
-                  {photo ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={photo} alt="" className="w-10 h-10 rounded-full object-cover" />
-                  ) : (
-                    <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center text-xs text-muted-foreground">—</div>
+      {/* Desktop / tablet table */}
+      <div className="hidden sm:block">
+        <Table>
+          <THead>
+            <Tr>
+              {isManager && (
+                <Th className="w-10 text-center">
+                  <input
+                    type="checkbox"
+                    checked={allChecked}
+                    ref={(el) => { if (el) el.indeterminate = someChecked; }}
+                    onChange={toggleAll}
+                    className="w-4 h-4"
+                  />
+                </Th>
+              )}
+              <Th>الصورة</Th>
+              <Th>الكود</Th>
+              <Th>الاسم</Th>
+              <Th>التصنيف</Th>
+              <Th>الهاتف</Th>
+              <Th>الحالة</Th>
+              <Th></Th>
+            </Tr>
+          </THead>
+          <TBody>
+            {players.map((p) => {
+              const photo = p.photo_url ? photoMap[p.photo_url] : null;
+              const isSelected = selected.has(p.id);
+              return (
+                <Tr key={p.id} className={isSelected ? "bg-emerald-50/40" : ""}>
+                  {isManager && (
+                    <Td className="text-center">
+                      <input
+                        type="checkbox"
+                        checked={isSelected}
+                        onChange={() => toggle(p.id)}
+                        className="w-4 h-4"
+                      />
+                    </Td>
                   )}
-                </Td>
-                <Td className="font-mono ltr-numbers">{p.code}</Td>
-                <Td className="font-medium">{p.full_name}</Td>
-                <Td>{p.categories?.name ?? "—"}</Td>
-                <Td dir="ltr">{p.phone ?? "—"}</Td>
-                <Td>
-                  <Badge variant={p.status === "active" ? "success" : p.status === "suspended" ? "warning" : "muted"}>
-                    {p.status === "active" ? "نشط" : p.status === "suspended" ? "موقوف" : "مؤرشف"}
-                  </Badge>
-                </Td>
-                <Td className="text-left no-print">
-                  <div className="flex gap-3 justify-end">
-                    <Link href={`/academy/${academyId}/players/${p.id}`} className="text-emerald-700 text-sm hover:underline">عرض</Link>
-                    {isManager && (
-                      <Link href={`/academy/${academyId}/players/${p.id}/edit`} className="text-amber-600 text-sm hover:underline">تعديل</Link>
+                  <Td>
+                    {photo ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={photo} alt="" className="w-10 h-10 rounded-full object-cover" />
+                    ) : (
+                      <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center text-xs text-muted-foreground">—</div>
+                    )}
+                  </Td>
+                  <Td className="font-mono ltr-numbers">{p.code}</Td>
+                  <Td className="font-medium">{p.full_name}</Td>
+                  <Td>{p.categories?.name ?? "—"}</Td>
+                  <Td dir="ltr">{p.phone ?? "—"}</Td>
+                  <Td>
+                    <Badge variant={p.status === "active" ? "success" : p.status === "suspended" ? "warning" : "muted"}>
+                      {p.status === "active" ? "نشط" : p.status === "suspended" ? "موقوف" : "مؤرشف"}
+                    </Badge>
+                  </Td>
+                  <Td className="text-left no-print">
+                    <div className="flex gap-3 justify-end">
+                      <Link href={`/academy/${academyId}/players/${p.id}`} className="text-emerald-700 text-sm hover:underline">عرض</Link>
+                      {isManager && (
+                        <Link href={`/academy/${academyId}/players/${p.id}/edit`} className="text-amber-600 text-sm hover:underline">تعديل</Link>
+                      )}
+                    </div>
+                  </Td>
+                </Tr>
+              );
+            })}
+            {players.length === 0 && (
+              <Tr><Td colSpan={isManager ? 8 : 7} className="text-center text-muted-foreground py-10">لا يوجد لاعبون مطابقون</Td></Tr>
+            )}
+          </TBody>
+        </Table>
+      </div>
+
+      {/* Mobile card list */}
+      <ul className="sm:hidden space-y-2">
+        {players.length === 0 ? (
+          <li className="text-center text-muted-foreground py-10 bg-white rounded-xl border border-border">لا يوجد لاعبون مطابقون</li>
+        ) : players.map((p) => {
+          const photo = p.photo_url ? photoMap[p.photo_url] : null;
+          const isSelected = selected.has(p.id);
+          return (
+            <li
+              key={p.id}
+              className={`bg-white border rounded-xl p-3 transition-colors ${
+                isSelected ? "border-emerald-400 ring-1 ring-emerald-200" : "border-border"
+              }`}
+            >
+              <div className="flex items-start gap-3">
+                {isManager && (
+                  <input
+                    type="checkbox"
+                    checked={isSelected}
+                    onChange={() => toggle(p.id)}
+                    className="w-4 h-4 mt-1.5 shrink-0"
+                  />
+                )}
+                {photo ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={photo} alt="" className="w-12 h-12 rounded-full object-cover shrink-0" />
+                ) : (
+                  <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center text-xs text-muted-foreground shrink-0">—</div>
+                )}
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="font-bold text-emerald-950 truncate">{p.full_name}</div>
+                    <Badge variant={p.status === "active" ? "success" : p.status === "suspended" ? "warning" : "muted"}>
+                      {p.status === "active" ? "نشط" : p.status === "suspended" ? "موقوف" : "مؤرشف"}
+                    </Badge>
+                  </div>
+                  <div className="text-[11px] text-muted-foreground mt-0.5 flex items-center gap-2 flex-wrap">
+                    <span className="font-mono ltr-numbers">#{p.code}</span>
+                    <span>•</span>
+                    <span>{p.categories?.name ?? "بدون تصنيف"}</span>
+                    {p.phone && (
+                      <>
+                        <span>•</span>
+                        <a dir="ltr" href={`tel:${p.phone}`} className="hover:underline">📞 {p.phone}</a>
+                      </>
                     )}
                   </div>
-                </Td>
-              </Tr>
-            );
-          })}
-          {players.length === 0 && (
-            <Tr><Td colSpan={isManager ? 8 : 7} className="text-center text-muted-foreground py-10">لا يوجد لاعبون مطابقون</Td></Tr>
-          )}
-        </TBody>
-      </Table>
+                  <div className="flex gap-3 mt-2 no-print">
+                    <Link href={`/academy/${academyId}/players/${p.id}`} className="text-emerald-700 text-xs font-semibold hover:underline">عرض الملف</Link>
+                    {isManager && (
+                      <Link href={`/academy/${academyId}/players/${p.id}/edit`} className="text-amber-600 text-xs font-semibold hover:underline">تعديل</Link>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </li>
+          );
+        })}
+      </ul>
     </div>
   );
 }
