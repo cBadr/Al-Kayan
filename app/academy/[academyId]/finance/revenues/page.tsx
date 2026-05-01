@@ -75,6 +75,7 @@ export default async function RevenuesPage({ params, searchParams }: {
         title="الإيرادات"
         description="كل واردات الأكاديمية: اشتراكات اللاعبين والإيرادات الإضافية"
         actions={<PrintExport filename={`revenues-${from}-${to}`} />}
+        hidePrint
       />
       <PageBody>
         <Card className="mb-6">

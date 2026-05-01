@@ -49,6 +49,7 @@ export default async function SubscriptionsPage({ params, searchParams }: {
           </form>
           <PrintExport filename={`receipts-${academyId}`} />
         </>}
+        hidePrint
       />
       <PageBody>
         <Card className="mb-4">

@@ -43,6 +43,9 @@ export default async function PlayerProfilePage({ params }: { params: Promise<{ 
         description={`الكود: ${p.code} • ${p.categories?.name ?? "بدون تصنيف"}`}
         actions={
           <>
+            <Button asChild variant="outline">
+              <Link href={`/academy/${academyId}/players`}>← العودة</Link>
+            </Button>
             {isManager && (
               <Button asChild variant="outline">
                 <Link href={`/academy/${academyId}/players/${playerId}/edit`}>تعديل</Link>

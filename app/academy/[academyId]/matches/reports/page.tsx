@@ -93,6 +93,7 @@ export default async function MatchReportsPage({
             <PrintExport filename={`matches-report-${new Date().toISOString().slice(0,10)}`} />
           </>
         }
+        hidePrint
       />
       <PageBody>
         {/* Filters */}

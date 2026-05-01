@@ -2,13 +2,11 @@ import { PageBody, PageHeader } from "@/components/app-shell";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Table, TBody, THead, Td, Th, Tr } from "@/components/ui/table";
 import { createClient } from "@/lib/supabase/server";
 import { requireAcademyAccess } from "@/lib/auth/rbac";
-import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import { signedUrlMap } from "@/lib/storage";
-import { deletePlayer } from "./actions";
+import { PlayersTable } from "./players-table";
 
 export default async function PlayersPage({ params, searchParams }: {
   params: Promise<{ academyId: string }>;
@@ -92,56 +90,13 @@ export default async function PlayersPage({ params, searchParams }: {
           </CardContent>
         </Card>
 
-        <Table>
-          <THead>
-            <Tr>
-              <Th>الصورة</Th><Th>الكود</Th><Th>الاسم</Th><Th>التصنيف</Th>
-              <Th>الهاتف</Th><Th>الحالة</Th><Th></Th>
-            </Tr>
-          </THead>
-          <TBody>
-            {(players ?? []).map((p: any) => {
-              const photo = p.photo_url ? photoMap.get(p.photo_url) : null;
-              return (
-                <Tr key={p.id}>
-                  <Td>
-                    {photo ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={photo} alt="" className="w-10 h-10 rounded-full object-cover" />
-                    ) : (
-                      <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center text-xs text-muted-foreground">—</div>
-                    )}
-                  </Td>
-                  <Td className="font-mono ltr-numbers">{p.code}</Td>
-                  <Td className="font-medium">{p.full_name}</Td>
-                  <Td>{p.categories?.name ?? "—"}</Td>
-                  <Td dir="ltr">{p.phone ?? "—"}</Td>
-                  <Td>
-                    <Badge variant={p.status === "active" ? "success" : p.status === "suspended" ? "warning" : "muted"}>
-                      {p.status === "active" ? "نشط" : p.status === "suspended" ? "موقوف" : "مؤرشف"}
-                    </Badge>
-                  </Td>
-                  <Td className="text-left">
-                    <div className="flex gap-3 justify-end">
-                      <Link href={`/academy/${academyId}/players/${p.id}`} className="text-emerald-700 text-sm hover:underline">عرض</Link>
-                      {isManager && (
-                        <>
-                          <Link href={`/academy/${academyId}/players/${p.id}/edit`} className="text-warning text-sm hover:underline">تعديل</Link>
-                          <form action={async () => { "use server"; await deletePlayer(academyId, p.id); }}>
-                            <button type="submit" className="text-destructive text-sm hover:underline">حذف</button>
-                          </form>
-                        </>
-                      )}
-                    </div>
-                  </Td>
-                </Tr>
-              );
-            })}
-            {(players ?? []).length === 0 && (
-              <Tr><Td colSpan={7} className="text-center text-muted-foreground py-10">لا يوجد لاعبون مطابقون</Td></Tr>
-            )}
-          </TBody>
-        </Table>
+        <PlayersTable
+          academyId={academyId}
+          players={(players ?? []) as any}
+          photoMap={Object.fromEntries(photoMap)}
+          categories={(cats ?? []) as any}
+          isManager={isManager}
+        />
 
         {totalPages > 1 && (
           <div className="flex justify-center gap-1 mt-4">

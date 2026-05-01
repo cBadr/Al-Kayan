@@ -110,6 +110,56 @@ export async function updatePlayerStatus(academyId: string, playerId: string, st
  * Reactivate a player whose status is "suspended" (e.g. by 3-yellow-card auto-rule).
  * Resets the yellow-card cycle so future yellows count from now.
  */
+export async function bulkUpdateStatus(
+  academyId: string,
+  playerIds: string[],
+  status: "active" | "suspended" | "archived",
+): Promise<{ count: number; error?: string }> {
+  await requireAcademyManager(academyId);
+  if (playerIds.length === 0) return { count: 0 };
+  const sb = await createClient();
+  const { error } = await sb.from("players")
+    .update({ status })
+    .in("id", playerIds)
+    .eq("academy_id", academyId);
+  if (error) return { count: 0, error: error.message };
+  revalidatePath(`/academy/${academyId}/players`);
+  return { count: playerIds.length };
+}
+
+export async function bulkUpdateCategory(
+  academyId: string,
+  playerIds: string[],
+  categoryId: string | null,
+): Promise<{ count: number; error?: string }> {
+  await requireAcademyManager(academyId);
+  if (playerIds.length === 0) return { count: 0 };
+  const sb = await createClient();
+  const { error } = await sb.from("players")
+    .update({ category_id: categoryId })
+    .in("id", playerIds)
+    .eq("academy_id", academyId);
+  if (error) return { count: 0, error: error.message };
+  revalidatePath(`/academy/${academyId}/players`);
+  return { count: playerIds.length };
+}
+
+export async function bulkDeletePlayers(
+  academyId: string,
+  playerIds: string[],
+): Promise<{ count: number; error?: string }> {
+  await requireAcademyManager(academyId);
+  if (playerIds.length === 0) return { count: 0 };
+  const sb = await createClient();
+  const { error } = await sb.from("players")
+    .delete()
+    .in("id", playerIds)
+    .eq("academy_id", academyId);
+  if (error) return { count: 0, error: error.message };
+  revalidatePath(`/academy/${academyId}/players`);
+  return { count: playerIds.length };
+}
+
 export async function reactivatePlayer(academyId: string, playerId: string) {
   await requireAcademyManager(academyId);
   const sb = await createClient();

@@ -69,6 +69,23 @@ export default async function AttendancePage({ params, searchParams }: {
 
   const isManager = me.isSuperAdmin || me.managedAcademyIds.includes(academyId);
 
+  // Honor board — top players by attendance % (academy-wide, optionally filtered by category)
+  let honorQ = sb.from("player_attendance_summary")
+    .select("player_id, full_name, code, attendance_pct, present_count, late_count, total_records, academy_id")
+    .eq("academy_id", academyId)
+    .gt("total_records", 4) // at least 5 records for a meaningful %
+    .order("attendance_pct", { ascending: false })
+    .limit(10);
+  const { data: honorAll } = await honorQ;
+
+  // If a category filter is active, filter honor board to that category's players
+  let honorBoard: any[] = honorAll ?? [];
+  if (sp.category && honorBoard.length > 0) {
+    const { data: catPlayers } = await sb.from("players").select("id").eq("academy_id", academyId).eq("category_id", sp.category);
+    const catIds = new Set((catPlayers ?? []).map((p: any) => p.id));
+    honorBoard = honorBoard.filter((h: any) => catIds.has(h.player_id));
+  }
+
   // Stat counts
   const counts = { present: 0, absent: 0, late: 0, excused: 0 };
   for (const r of existing) {
@@ -155,6 +172,49 @@ export default async function AttendancePage({ params, searchParams }: {
         <div className="text-center text-sm text-muted-foreground mb-4">
           <strong className="text-emerald-900 text-lg">{total}</strong> الإجمالي • مُسجَّل: {counts.present + counts.late + counts.absent + counts.excused}
         </div>
+
+        {/* Honor board */}
+        {honorBoard.length > 0 && (
+          <Card className="mb-4 border-amber-300 bg-gradient-to-l from-amber-50/50 to-white">
+            <CardContent className="pt-6">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="font-black text-amber-900 flex items-center gap-2">
+                  🏆 لوحة الشرف <span className="text-xs font-normal text-muted-foreground">(الأكثر التزاماً)</span>
+                </h3>
+                <span className="text-[10px] text-muted-foreground">
+                  {sp.category ? "ضمن التصنيف المختار" : "كل الأكاديمية"}
+                </span>
+              </div>
+              <ol className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2">
+                {honorBoard.slice(0, 10).map((h, i) => (
+                  <li key={h.player_id}
+                      className={`flex items-center gap-2 p-2 rounded-lg ${
+                        i === 0 ? "bg-gradient-to-l from-amber-300/40 to-amber-100/40 border border-amber-400" :
+                        i === 1 ? "bg-gradient-to-l from-gray-200 to-gray-50 border border-gray-300" :
+                        i === 2 ? "bg-gradient-to-l from-amber-700/20 to-amber-100/20 border border-amber-700/40" :
+                        "bg-white border border-border"
+                      }`}>
+                    <span className={`shrink-0 w-7 h-7 rounded-full flex items-center justify-center font-bold text-xs ltr-numbers ${
+                      i === 0 ? "bg-amber-400 text-emerald-950" :
+                      i === 1 ? "bg-gray-400 text-white" :
+                      i === 2 ? "bg-amber-700 text-white" :
+                      "bg-emerald-700 text-white"
+                    }`}>
+                      {i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : i + 1}
+                    </span>
+                    <Link href={`/academy/${academyId}/players/${h.player_id}`} className="flex-1 min-w-0 hover:underline">
+                      <div className="font-semibold text-sm truncate">{h.full_name}</div>
+                      <div className="text-[10px] text-muted-foreground">
+                        {h.present_count} حضور · {h.late_count} تأخير
+                      </div>
+                    </Link>
+                    <div className="text-emerald-700 font-black text-sm ltr-numbers">{h.attendance_pct}%</div>
+                  </li>
+                ))}
+              </ol>
+            </CardContent>
+          </Card>
+        )}
 
         {!activeTraining ? (
           <Card>

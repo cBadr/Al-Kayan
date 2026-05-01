@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useMemo } from "react";
+import { Input } from "@/components/ui/input";
 import { setAttendance, clearAttendance, overrideLock, markAllPresent } from "./actions";
 
 type Status = "present" | "absent" | "late" | "excused";
@@ -48,6 +49,21 @@ export function AttendanceGrid({
   });
   const [pending, startTransition] = useTransition();
   const [busy, setBusy] = useState<Set<string>>(new Set());
+  const [search, setSearch] = useState("");
+  const [filter, setFilter] = useState<"all" | "unmarked" | "present" | "absent" | "late" | "excused">("all");
+
+  const visiblePlayers = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    return players.filter((p) => {
+      if (q && !p.full_name.toLowerCase().includes(q) && !p.code.toLowerCase().includes(q)) return false;
+      if (filter !== "all") {
+        const cur = state[p.id];
+        if (filter === "unmarked") return !cur;
+        if (!cur || cur.status !== filter) return false;
+      }
+      return true;
+    });
+  }, [players, search, filter, state]);
 
   const isLocked = (e?: ExistingRow) => {
     if (!e) return false;
@@ -112,22 +128,41 @@ export function AttendanceGrid({
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-3">
-        <p className="text-xs text-muted-foreground">
-          اضغط على حالة لتسجيلها فوراً. اضغط مرة أخرى لإلغائها.
-        </p>
+      <div className="flex flex-wrap items-center gap-2 mb-3 no-print">
+        <Input
+          placeholder="🔎 بحث بالاسم أو الكود..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="flex-1 min-w-48"
+        />
+        <select
+          value={filter}
+          onChange={(e) => setFilter(e.target.value as any)}
+          className="h-10 rounded-md border border-border bg-card px-3 text-sm"
+        >
+          <option value="all">عرض الكل</option>
+          <option value="unmarked">غير مُسجَّل</option>
+          <option value="present">حاضر</option>
+          <option value="absent">غائب</option>
+          <option value="late">متأخر</option>
+          <option value="excused">بعذر</option>
+        </select>
         <button
           type="button"
           onClick={presentAll}
           disabled={pending}
-          className="text-xs font-semibold text-emerald-700 hover:text-emerald-900 px-3 py-1.5 rounded-md border border-emerald-700/30 bg-white hover:bg-emerald-50"
+          className="text-xs font-semibold text-emerald-700 hover:text-emerald-900 px-3 py-2 rounded-md border border-emerald-700/30 bg-white hover:bg-emerald-50"
         >
           ✅ تحضير الجميع
         </button>
       </div>
 
+      <p className="text-[10px] text-muted-foreground mb-2">
+        اضغط على حالة لتسجيلها فوراً. اضغط مرة أخرى لإلغائها · ({visiblePlayers.length}/{players.length} ظاهر)
+      </p>
+
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
-        {players.map((p, idx) => {
+        {visiblePlayers.map((p, idx) => {
           const cur = state[p.id];
           const locked = isLocked(cur);
           const isBusy = busy.has(p.id);
@@ -200,6 +235,9 @@ export function AttendanceGrid({
 
       {players.length === 0 && (
         <div className="text-center py-12 text-muted-foreground">لا يوجد لاعبون في هذا التصنيف</div>
+      )}
+      {players.length > 0 && visiblePlayers.length === 0 && (
+        <div className="text-center py-12 text-muted-foreground">لا توجد نتائج للفلتر الحالي</div>
       )}
     </div>
   );

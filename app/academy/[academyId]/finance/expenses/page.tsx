@@ -8,6 +8,7 @@ import { createClient } from "@/lib/supabase/server";
 import { requireAcademyManager } from "@/lib/auth/rbac";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { addExpense, addExpenseCategory } from "./actions";
+import { ExpenseCategoryList } from "./category-list";
 import Link from "next/link";
 
 export default async function ExpensesPage({
@@ -73,9 +74,7 @@ export default async function ExpensesPage({
                 <Input name="name" placeholder="اسم التصنيف" required />
                 <Button type="submit" size="sm">إضافة</Button>
               </form>
-              <ul className="text-sm text-muted-foreground space-y-1">
-                {(cats ?? []).map((c: any) => <li key={c.id}>{c.name}</li>)}
-              </ul>
+              <ExpenseCategoryList academyId={academyId} categories={(cats ?? []) as any} />
             </CardContent>
           </Card>
         </div>

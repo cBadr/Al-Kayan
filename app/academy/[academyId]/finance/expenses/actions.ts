@@ -26,3 +26,28 @@ export async function addExpenseCategory(academyId: string, fd: FormData) {
   await sb.from("expense_categories").insert({ academy_id: academyId, name });
   revalidatePath(`/academy/${academyId}/finance/expenses`);
 }
+
+export async function renameExpenseCategory(academyId: string, id: string, name: string) {
+  await requireAcademyManager(academyId);
+  const trimmed = name.trim();
+  if (!trimmed) return { error: "الاسم لا يمكن أن يكون فارغاً" };
+  const sb = await createClient();
+  const { error } = await sb.from("expense_categories")
+    .update({ name: trimmed })
+    .eq("id", id)
+    .eq("academy_id", academyId);
+  if (error) return { error: error.message };
+  revalidatePath(`/academy/${academyId}/finance/expenses`);
+}
+
+export async function deleteExpenseCategory(academyId: string, id: string) {
+  await requireAcademyManager(academyId);
+  const sb = await createClient();
+  // Existing expenses with this category will have category_id set to null (FK on delete set null).
+  const { error } = await sb.from("expense_categories")
+    .delete()
+    .eq("id", id)
+    .eq("academy_id", academyId);
+  if (error) return { error: error.message };
+  revalidatePath(`/academy/${academyId}/finance/expenses`);
+}

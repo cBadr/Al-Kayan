@@ -5,6 +5,74 @@ import { createClient } from "@/lib/supabase/server";
 import { requireAcademyAccess } from "@/lib/auth/rbac";
 
 /**
+ * Multi-slot weekly schedule generator. Each slot is (category, weekday, time,
+ * duration, location). Trainings are created for every matching weekday in the
+ * date range. Duplicates (same training_at + category) are skipped.
+ */
+export async function createWeeklySchedule(
+  academyId: string,
+  payload: {
+    from: string;
+    to: string;
+    slots: Array<{
+      category_id: string;
+      weekday: number;
+      time: string;
+      duration_min: number;
+      location: string | null;
+    }>;
+  },
+): Promise<{ created: number; skipped: number; error?: string }> {
+  await requireAcademyAccess(academyId);
+  const sb = await createClient();
+
+  if (!payload.from || !payload.to) return { created: 0, skipped: 0, error: "حدد التاريخين" };
+  if (payload.slots.length === 0) return { created: 0, skipped: 0, error: "أضف فترة واحدة على الأقل" };
+
+  const from = new Date(payload.from);
+  const to = new Date(payload.to);
+  if (from > to) return { created: 0, skipped: 0, error: "تاريخ البداية بعد النهاية" };
+
+  // Existing trainings in the range (for dedup): match by (category_id, scheduled_at)
+  const { data: existing } = await sb.from("trainings")
+    .select("category_id, scheduled_at")
+    .eq("academy_id", academyId)
+    .gte("scheduled_at", from.toISOString())
+    .lte("scheduled_at", new Date(to.getTime() + 86400000).toISOString());
+  const existingKeys = new Set(
+    (existing ?? []).map((r: any) => `${r.category_id}|${new Date(r.scheduled_at).toISOString()}`),
+  );
+
+  const rows: any[] = [];
+  let skipped = 0;
+  for (let d = new Date(from); d <= to; d = new Date(d.getTime() + 86400000)) {
+    for (const slot of payload.slots) {
+      if (slot.weekday !== d.getDay()) continue;
+      const [hh, mm] = slot.time.split(":").map(Number);
+      const dt = new Date(d.getFullYear(), d.getMonth(), d.getDate(), hh || 0, mm || 0);
+      const key = `${slot.category_id}|${dt.toISOString()}`;
+      if (existingKeys.has(key)) { skipped++; continue; }
+      existingKeys.add(key);
+      rows.push({
+        academy_id: academyId,
+        category_id: slot.category_id,
+        scheduled_at: dt.toISOString(),
+        duration_min: slot.duration_min,
+        location: slot.location,
+      });
+    }
+  }
+
+  if (rows.length === 0) return { created: 0, skipped };
+
+  const { error } = await sb.from("trainings").insert(rows);
+  if (error) return { created: 0, skipped, error: error.message };
+
+  revalidatePath(`/academy/${academyId}/trainings`);
+  return { created: rows.length, skipped };
+}
+
+/**
  * Bulk-create trainings: pick weekdays + time + duration + date range.
  * weekdays is 0..6 (Sun..Sat).
  */
