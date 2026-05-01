@@ -26,8 +26,8 @@ export async function AppShell({
 
   return (
     <div className="flex flex-1 min-h-screen">
-      {/* Desktop sidebar */}
-      <aside className="hidden md:flex w-72 shrink-0 bg-mesh-emerald text-white flex-col no-print relative overflow-hidden">
+      {/* Desktop sidebar — only on large screens (≥1024px). Tablets use the drawer overlay. */}
+      <aside className="hidden lg:flex w-72 shrink-0 bg-mesh-emerald text-white flex-col no-print relative overflow-hidden">
         <div className="absolute top-0 left-0 bottom-0 w-px bg-gradient-to-b from-transparent via-gold-400/40 to-transparent" />
         <div className="px-6 py-6 flex items-center gap-3 border-b border-white/10">
           <BrandLogo className="w-10 h-10 drop-shadow-md" rounded="rounded-xl" />
@@ -73,8 +73,8 @@ export async function AppShell({
       </aside>
 
       <main className="flex-1 min-w-0 flex flex-col bg-pitch">
-        {/* Mobile top bar */}
-        <div className="md:hidden flex items-center justify-between px-4 py-3 border-b border-border bg-white/80 backdrop-blur-sm no-print">
+        {/* Top bar with menu button — shown on phones AND tablets (below lg). */}
+        <div className="lg:hidden flex items-center justify-between px-4 py-3 border-b border-border bg-white/80 backdrop-blur-sm no-print">
           <MobileNav nav={nav} title={title} appName={appName} />
           <Link href="/" className="flex items-center gap-2">
             <BrandLogo className="w-7 h-7" rounded="rounded-lg" />
@@ -83,8 +83,8 @@ export async function AppShell({
           <NotificationsBell />
         </div>
 
-        {/* Desktop top bar with bell only */}
-        <div className="hidden md:flex justify-end px-8 py-2 border-b border-border bg-white/40 backdrop-blur-sm no-print">
+        {/* Desktop top bar with bell only — large screens (≥1024px). */}
+        <div className="hidden lg:flex justify-end px-8 py-2 border-b border-border bg-white/40 backdrop-blur-sm no-print">
           <NotificationsBell />
         </div>
 
