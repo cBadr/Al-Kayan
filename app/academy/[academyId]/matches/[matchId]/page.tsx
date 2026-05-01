@@ -82,10 +82,11 @@ export default async function MatchDetail({ params }: { params: Promise<{ academ
             <CardTitle className="text-base">طاقم التحكيم</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               <RefCard role="حكم الساحة" name={match.referee_name} phone={match.referee_phone} />
               <RefCard role="مساعد الحكم الأول" name={match.assistant1_name} phone={match.assistant1_phone} />
               <RefCard role="مساعد الحكم الثاني" name={match.assistant2_name} phone={match.assistant2_phone} />
+              <RefCard role="مراقب المباراة" name={match.observer_name} phone={match.observer_phone} />
             </div>
           </CardContent>
         </Card>

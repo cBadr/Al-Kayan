@@ -167,6 +167,8 @@ export default async function MatchesPage({
                     <div className="space-y-1.5"><Label htmlFor="assistant1_phone">موبايل مساعد الحكم الأول</Label><Input id="assistant1_phone" name="assistant1_phone" dir="ltr" /></div>
                     <div className="space-y-1.5"><Label htmlFor="assistant2_name">اسم مساعد الحكم الثاني</Label><Input id="assistant2_name" name="assistant2_name" /></div>
                     <div className="space-y-1.5"><Label htmlFor="assistant2_phone">موبايل مساعد الحكم الثاني</Label><Input id="assistant2_phone" name="assistant2_phone" dir="ltr" /></div>
+                    <div className="space-y-1.5"><Label htmlFor="observer_name">اسم مراقب المباراة</Label><Input id="observer_name" name="observer_name" /></div>
+                    <div className="space-y-1.5"><Label htmlFor="observer_phone">موبايل مراقب المباراة</Label><Input id="observer_phone" name="observer_phone" dir="ltr" /></div>
                   </div>
                 </div>
 

@@ -23,6 +23,8 @@ export async function createMatch(academyId: string, fd: FormData) {
     assistant1_phone: String(fd.get("assistant1_phone") ?? "") || null,
     assistant2_name: String(fd.get("assistant2_name") ?? "") || null,
     assistant2_phone: String(fd.get("assistant2_phone") ?? "") || null,
+    observer_name: String(fd.get("observer_name") ?? "") || null,
+    observer_phone: String(fd.get("observer_phone") ?? "") || null,
     notes: String(fd.get("notes") ?? "") || null,
   }).select("id").single();
   if (error) return { error: error.message };
@@ -35,7 +37,8 @@ export async function updateMatch(academyId: string, matchId: string, fd: FormDa
   const sb = await createClient();
   const update: any = {};
   const fields = ["opponent","venue","formation","referee_name","referee_phone",
-    "assistant1_name","assistant1_phone","assistant2_name","assistant2_phone","notes"];
+    "assistant1_name","assistant1_phone","assistant2_name","assistant2_phone",
+    "observer_name","observer_phone","notes"];
   for (const k of fields) {
     const v = fd.get(k);
     if (v !== null) update[k] = String(v) || null;
