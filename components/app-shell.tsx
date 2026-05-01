@@ -75,7 +75,7 @@ export async function AppShell({
       <main className="flex-1 min-w-0 flex flex-col bg-pitch">
         {/* Top bar with menu button — shown on phones AND tablets (below lg). */}
         <div className="lg:hidden flex items-center justify-between px-4 py-3 border-b border-border bg-white/80 backdrop-blur-sm no-print">
-          <MobileNav nav={nav} title={title} appName={appName} />
+          <MobileNav nav={nav} title={title} appName={appName} user={user} />
           <Link href="/" className="flex items-center gap-2">
             <BrandLogo className="w-7 h-7" rounded="rounded-lg" />
             <span className="font-black text-emerald-900">{appName}</span>
