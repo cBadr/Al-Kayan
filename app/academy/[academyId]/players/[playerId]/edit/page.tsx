@@ -6,7 +6,8 @@ import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/server";
 import { requireAcademyManager } from "@/lib/auth/rbac";
 import { signedUrl } from "@/lib/storage";
-import { updatePlayer, deletePlayer } from "../../actions";
+import { updatePlayer, deletePlayer, invitePlayer } from "../../actions";
+import { InviteCard } from "./invite-card";
 import Link from "next/link";
 
 export default async function EditPlayerPage({ params }: { params: Promise<{ academyId: string; playerId: string }> }) {
@@ -26,6 +27,19 @@ export default async function EditPlayerPage({ params }: { params: Promise<{ aca
         actions={<Button asChild variant="outline"><Link href={`/academy/${academyId}/players/${playerId}`}>عرض البروفايل</Link></Button>}
       />
       <PageBody>
+        <div className="max-w-3xl mb-4">
+          <InviteCard
+            academyId={academyId}
+            playerId={playerId}
+            defaultEmail={p.email ?? ""}
+            hasLogin={!!p.user_id}
+            invite={async (aid, pid, email, password) => {
+              "use server";
+              return await invitePlayer(aid, pid, email, password);
+            }}
+          />
+        </div>
+
         <Card className="max-w-3xl">
           <CardContent className="pt-6">
             <form action={async (fd) => { "use server"; await updatePlayer(academyId, playerId, fd); }}

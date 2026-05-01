@@ -160,10 +160,70 @@ export async function bulkDeletePlayers(
   return { count: playerIds.length };
 }
 
+/**
+ * Set up (or reset) login credentials for an existing player. Idempotent:
+ * - If the email already has an auth account, we update its password and link it.
+ * - Otherwise we create a new auth account.
+ * In either case we ensure a `player` membership exists so the player can read
+ * their academy's data via RLS.
+ */
+export async function invitePlayer(
+  academyId: string,
+  playerId: string,
+  email: string,
+  password: string,
+): Promise<{ ok?: boolean; error?: string }> {
+  await requireAcademyManager(academyId);
+  const trimmedEmail = email.trim().toLowerCase();
+  if (!trimmedEmail) return { error: "البريد الإلكتروني مطلوب" };
+  if (password.length < 8) return { error: "كلمة المرور يجب أن تكون 8 أحرف فأكثر" };
+
+  const admin = createAdminClient();
+
+  let userId: string | null = null;
+  for (let page = 1; page < 20; page++) {
+    const { data, error } = await admin.auth.admin.listUsers({ page, perPage: 200 });
+    if (error || !data?.users?.length) break;
+    const hit = data.users.find((u: any) => (u.email ?? "").toLowerCase() === trimmedEmail);
+    if (hit) { userId = hit.id; break; }
+    if (data.users.length < 200) break;
+  }
+
+  if (userId) {
+    const { error } = await admin.auth.admin.updateUserById(userId, { password });
+    if (error) return { error: error.message };
+  } else {
+    const { data, error } = await admin.auth.admin.createUser({
+      email: trimmedEmail,
+      password,
+      email_confirm: true,
+    });
+    if (error || !data?.user) return { error: error?.message ?? "تعذَّر إنشاء الحساب" };
+    userId = data.user.id;
+  }
+
+  await admin.from("players")
+    .update({ user_id: userId, email: trimmedEmail })
+    .eq("id", playerId)
+    .eq("academy_id", academyId);
+
+  await admin.from("memberships").upsert(
+    { user_id: userId, academy_id: academyId, role: "player" },
+    { onConflict: "user_id,academy_id,role" },
+  );
+
+  const { data: p } = await admin.from("players").select("full_name").eq("id", playerId).maybeSingle();
+  if (p?.full_name) {
+    await admin.from("profiles").upsert({ id: userId, full_name: p.full_name });
+  }
+
+  revalidatePath(`/academy/${academyId}/players/${playerId}`);
+  return { ok: true };
+}
+
 export async function reactivatePlayer(academyId: string, playerId: string) {
   await requireAcademyManager(academyId);
   const sb = await createClient();
-  // Use the SQL helper function defined in migration 0007 (security definer).
   const { error } = await sb.rpc("reactivate_player", { p_player: playerId });
   if (error) {
     // Fallback: do it manually if rpc missing for any reason.
