@@ -2,10 +2,12 @@ import { PageBody, PageHeader } from "@/components/app-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/server";
 import { requireAcademyManager } from "@/lib/auth/rbac";
 import { saveAcademyInfo, saveAcademySettings } from "./actions";
+import { SettingsForm } from "./save-feedback";
+import { CustomFieldsManager } from "./custom-fields-manager";
+import type { CustomFieldDefinition } from "@/lib/custom-fields";
 
 const ALL_FIELDS = [
   ["full_name", "الاسم رباعي"],
@@ -29,6 +31,21 @@ export default async function SettingsPage({ params }: { params: Promise<{ acade
   const s: any = a.settings ?? {};
   const required: string[] = s.required_fields ?? ["full_name"];
 
+  const { data: customFields } = await sb.from("custom_field_definitions")
+    .select("*")
+    .eq("academy_id", academyId)
+    .order("display_order");
+
+  // Bind academyId so the action signature matches the wrapper.
+  async function infoAction(fd: FormData) {
+    "use server";
+    return await saveAcademyInfo(academyId, fd);
+  }
+  async function settingsAction(fd: FormData) {
+    "use server";
+    return await saveAcademySettings(academyId, fd);
+  }
+
   return (
     <>
       <PageHeader title="إعدادات الأكاديمية" hidePrint />
@@ -38,7 +55,7 @@ export default async function SettingsPage({ params }: { params: Promise<{ acade
           <Card>
             <CardHeader><CardTitle>بيانات الأكاديمية</CardTitle></CardHeader>
             <CardContent>
-              <form action={async (fd) => { "use server"; await saveAcademyInfo(academyId, fd); }} className="space-y-4">
+              <SettingsForm action={infoAction} saveLabel="حفظ بيانات الأكاديمية">
                 <div className="flex items-center gap-5 flex-wrap">
                   <div className="w-20 h-20 rounded-xl bg-gradient-to-br from-emerald-700 to-emerald-900 flex items-center justify-center overflow-hidden border-2 border-gold-400/30">
                     {a.logo_url ? (
@@ -97,52 +114,59 @@ export default async function SettingsPage({ params }: { params: Promise<{ acade
                     </div>
                   </div>
                 </div>
-
-                <div className="flex justify-end">
-                  <Button type="submit">حفظ بيانات الأكاديمية</Button>
-                </div>
-              </form>
+              </SettingsForm>
             </CardContent>
           </Card>
 
-          {/* Other settings */}
-          <form action={async (fd) => { "use server"; await saveAcademySettings(academyId, fd); }} className="space-y-6">
-            <Card>
-              <CardHeader><CardTitle>إعدادات عامة</CardTitle></CardHeader>
-              <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <F name="attendance_lock_minutes" label="دقائق قفل الحضور" type="number" defaultValue={s.attendance_lock_minutes ?? 25} />
-                <F name="cycle_days" label="مدة دورة الاشتراك (أيام)" type="number" defaultValue={a.cycle_days ?? 30} />
-                <div className="md:col-span-2">
-                  <F name="receipt_footer" label="تذييل الإيصال" defaultValue={s.receipt_footer ?? ""} />
+          {/* Custom fields */}
+          <Card>
+            <CardHeader><CardTitle>الحقول المخصصة (لنموذج التسجيل وملف اللاعب)</CardTitle></CardHeader>
+            <CardContent>
+              <CustomFieldsManager academyId={academyId} fields={(customFields ?? []) as CustomFieldDefinition[]} />
+            </CardContent>
+          </Card>
+
+          {/* General settings */}
+          <Card>
+            <CardHeader><CardTitle>إعدادات عامة</CardTitle></CardHeader>
+            <CardContent>
+              <SettingsForm action={settingsAction} saveLabel="حفظ الإعدادات">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <F name="attendance_lock_minutes" label="دقائق قفل الحضور" type="number"
+                     defaultValue={s.attendance_lock_minutes ?? 25} />
+                  <F name="cycle_days" label="مدة دورة الاشتراك (أيام)" type="number"
+                     defaultValue={(a as any).cycle_days ?? 30} />
+                  <div className="md:col-span-2">
+                    <F name="receipt_footer" label="تذييل الإيصال" defaultValue={s.receipt_footer ?? ""} />
+                  </div>
                 </div>
-              </CardContent>
-            </Card>
 
-            <Card>
-              <CardHeader><CardTitle>الحقول الإجبارية في نموذج التسجيل</CardTitle></CardHeader>
-              <CardContent className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                {ALL_FIELDS.map(([key, label]) => (
-                  <label key={key} className="flex items-center gap-2 text-sm">
-                    <input type="checkbox" name="required_fields" value={key} defaultChecked={required.includes(key)} />
-                    {label}
-                  </label>
-                ))}
-              </CardContent>
-            </Card>
+                <div className="border-t border-border pt-4 mt-4 space-y-3">
+                  <h4 className="font-bold text-emerald-900 text-sm">الحقول الإجبارية في نموذج التسجيل</h4>
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                    {ALL_FIELDS.map(([key, label]) => (
+                      <label key={key} className="flex items-center gap-2 text-sm">
+                        <input type="checkbox" name="required_fields" value={key} defaultChecked={required.includes(key)} />
+                        {label}
+                      </label>
+                    ))}
+                  </div>
+                </div>
 
-            <Card>
-              <CardHeader><CardTitle>الإشعارات التلقائية للمتأخرات</CardTitle></CardHeader>
-              <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <F name="overdue_every_days" label="كل كم يوم تذكير" type="number" defaultValue={s.overdue_reminders?.every_days ?? 7} />
-                <F name="overdue_before_due_days" label="قبل المهلة بـ (أيام)" type="number" defaultValue={s.overdue_reminders?.before_due_days ?? 3} />
-                <F name="overdue_final_after_days" label="إنذار نهائي بعد (أيام)" type="number" defaultValue={s.overdue_reminders?.final_after_days ?? 30} />
-              </CardContent>
-            </Card>
-
-            <div className="flex justify-end">
-              <Button type="submit">حفظ الإعدادات</Button>
-            </div>
-          </form>
+                <div className="border-t border-border pt-4 mt-4 space-y-3">
+                  <h4 className="font-bold text-emerald-900 text-sm">الإشعارات التلقائية للمتأخرات</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <F name="overdue_every_days" label="كل كم يوم تذكير" type="number"
+                       defaultValue={s.overdue_reminders?.every_days ?? 7} />
+                    <F name="overdue_before_due_days" label="قبل المهلة بـ (أيام)" type="number"
+                       defaultValue={s.overdue_reminders?.before_due_days ?? 3} />
+                    <F name="overdue_final_after_days" label="إنذار نهائي بعد (أيام)" type="number"
+                       defaultValue={s.overdue_reminders?.final_after_days ?? 30} />
+                  </div>
+                </div>
+              </SettingsForm>
+            </CardContent>
+          </Card>
         </div>
       </PageBody>
     </>

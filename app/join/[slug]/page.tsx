@@ -5,6 +5,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { submitJoinRequest } from "./actions";
+import { CustomFieldsRenderer } from "@/components/custom-fields-renderer";
+import type { CustomFieldDefinition } from "@/lib/custom-fields";
 
 export const dynamic = "force-dynamic";
 
@@ -19,6 +21,13 @@ export default async function JoinFormPage({ params }: {
   const required: string[] = (academy.settings as any)?.required_fields ?? ["full_name"];
   const isReq = (k: string) => required.includes(k);
 
+  const { data: customFields } = await sb.from("custom_field_definitions")
+    .select("*")
+    .eq("academy_id", academy.id)
+    .eq("active", true)
+    .eq("show_on_join", true)
+    .order("display_order");
+
   return (
     <div className="flex-1 p-8 max-w-3xl mx-auto w-full">
       <h1 className="text-3xl font-bold mb-1 text-primary">{academy.name}</h1>
@@ -27,6 +36,7 @@ export default async function JoinFormPage({ params }: {
       <Card>
         <CardContent className="pt-6">
           <form action={async (fd) => { "use server"; await submitJoinRequest(academy.id, slug, fd); }}
+                encType="multipart/form-data"
                 className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <F name="full_name" label="الاسم رباعي" required={isReq("full_name")} />
             <div className="space-y-1.5">
@@ -47,6 +57,9 @@ export default async function JoinFormPage({ params }: {
             <F name="guardian_phone" label="هاتف ولي الأمر" dir="ltr" required={isReq("guardian_phone")} />
             <FFile name="photo" label="صورة شخصية" required={isReq("photo")} />
             <FFile name="id_doc" label="صورة الهوية / شهادة الميلاد" required={isReq("id_doc")} />
+
+            <CustomFieldsRenderer fields={(customFields ?? []) as CustomFieldDefinition[]} />
+
             <div className="md:col-span-2 flex justify-end">
               <Button type="submit">إرسال الطلب</Button>
             </div>

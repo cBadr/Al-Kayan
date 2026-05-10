@@ -10,6 +10,7 @@ import { signedUrl } from "@/lib/storage";
 import Link from "next/link";
 import { AttendanceTrend } from "@/components/attendance-trend";
 import { reactivatePlayer } from "../actions";
+import { CustomValuesSection } from "./custom-values-section";
 
 export default async function PlayerProfilePage({ params }: { params: Promise<{ academyId: string; playerId: string }> }) {
   const { academyId, playerId } = await params;
@@ -35,6 +36,36 @@ export default async function PlayerProfilePage({ params }: { params: Promise<{ 
   if (!p) return <PageBody><p>اللاعب غير موجود</p></PageBody>;
   const photo = await signedUrl(p.photo_url);
   const isManager = me.isSuperAdmin || me.managedAcademyIds.includes(academyId);
+
+  // Custom field values + their definitions (for label + type)
+  const { data: customRows } = await sb.from("player_custom_values")
+    .select("id, field_definition_id, ad_hoc_label, value, custom_field_definitions(label, field_type, show_on_profile)")
+    .eq("player_id", playerId)
+    .order("display_order");
+  // Filter: hide definitions explicitly marked show_on_profile=false; keep ad-hoc rows always.
+  // Also: resolve file values to signed URLs.
+  const filtered = (customRows ?? []).filter((r: any) =>
+    r.field_definition_id == null || r.custom_field_definitions?.show_on_profile !== false,
+  );
+  const customValues = await Promise.all(
+    filtered.map(async (r: any) => {
+      const def = r.custom_field_definitions
+        ? { label: r.custom_field_definitions.label, field_type: r.custom_field_definitions.field_type, show_on_profile: r.custom_field_definitions.show_on_profile }
+        : null;
+      let signed: string | null = null;
+      if (def?.field_type === "file" && r.value) {
+        signed = await signedUrl(r.value);
+      }
+      return {
+        id: r.id,
+        field_definition_id: r.field_definition_id,
+        ad_hoc_label: r.ad_hoc_label,
+        value: r.value,
+        definition: def,
+        signed_url: signed,
+      };
+    }),
+  );
 
   return (
     <>
@@ -149,6 +180,18 @@ export default async function PlayerProfilePage({ params }: { params: Promise<{ 
               date: r.trainings?.scheduled_at ?? r.recorded_at,
               status: r.status,
             }))} />
+          </CardContent>
+        </Card>
+
+        <Card className="mt-6">
+          <CardHeader><CardTitle>📋 بيانات إضافية</CardTitle></CardHeader>
+          <CardContent>
+            <CustomValuesSection
+              academyId={academyId}
+              playerId={playerId}
+              values={customValues as any}
+              isManager={isManager}
+            />
           </CardContent>
         </Card>
 

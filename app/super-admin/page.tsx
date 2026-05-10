@@ -21,10 +21,11 @@ export default async function SuperAdminDashboard() {
 
   return (
     <>
-      <PageHeader title="لوحة Super Admin" description="نظرة شاملة على كل الأكاديميات في المنصة" />
+      <PageHeader title="لوحة Super Admin" description="نظرة شاملة على كل القطاعات في المنصة" hidePrint />
       <PageBody>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 stagger">
-          <StatCard label="عدد الأكاديميات" value={String(academiesCount ?? 0)} icon={<Building2 className="w-6 h-6" />} accent="emerald" />
+          <StatCard label="عدد القطاعات" value={String(academiesCount ?? 0)} icon={<Building2 className="w-6 h-6" />} accent="emerald" />
+
           <StatCard label="إجمالي اللاعبين" value={String(playersCount ?? 0)} icon={<Users className="w-6 h-6" />} accent="emerald" />
           <StatCard label="طلبات انضمام جديدة" value={String(pendingCount ?? 0)} icon={<UserPlus className="w-6 h-6" />} accent="gold" />
           <StatCard label="إجمالي التحصيل" value={formatCurrency(totalCollected)} icon={<TrendingUp className="w-6 h-6" />} accent="emerald" />
@@ -36,14 +37,14 @@ export default async function SuperAdminDashboard() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Building2 className="w-5 h-5 text-emerald-700" />
-              الأكاديميات المسجَّلة
+              القطاعات المسجَّلة
             </CardTitle>
           </CardHeader>
           <CardContent>
             {(academies ?? []).length === 0 ? (
               <div className="text-center py-12">
-                <p className="text-muted-foreground mb-4">لا توجد أكاديميات بعد</p>
-                <Link href="/super-admin/academies/new" className="text-emerald-700 hover:underline font-semibold">+ إضافة أكاديمية جديدة</Link>
+                <p className="text-muted-foreground mb-4">لا توجد قطاعات بعد</p>
+                <Link href="/super-admin/academies/new" className="text-emerald-700 hover:underline font-semibold">+ إضافة قطاع جديد</Link>
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">

@@ -8,6 +8,8 @@ import { getCurrentUser } from "@/lib/auth/rbac";
 import { redirect } from "next/navigation";
 import { createPlayer } from "../actions";
 import { CredentialsFields } from "./credentials-fields";
+import { CustomFieldsRenderer } from "@/components/custom-fields-renderer";
+import type { CustomFieldDefinition } from "@/lib/custom-fields";
 
 export default async function NewPlayerPage({ params }: { params: Promise<{ academyId: string }> }) {
   const { academyId } = await params;
@@ -18,6 +20,13 @@ export default async function NewPlayerPage({ params }: { params: Promise<{ acad
   const { data: academy } = await sb.from("academies").select("name, settings").eq("id", academyId).maybeSingle();
   const required: string[] = (academy?.settings as any)?.required_fields ?? ["full_name"];
   const isReq = (k: string) => required.includes(k);
+
+  const { data: customFields } = await sb.from("custom_field_definitions")
+    .select("*")
+    .eq("academy_id", academyId)
+    .eq("active", true)
+    .eq("show_on_admin_create", true)
+    .order("display_order");
 
   // Academies the current user can manage (or all if super admin).
   let academies: { id: string; name: string }[] = [];
@@ -85,6 +94,8 @@ export default async function NewPlayerPage({ params }: { params: Promise<{ acad
               </div>
 
               <CredentialsFields />
+
+              <CustomFieldsRenderer fields={(customFields ?? []) as CustomFieldDefinition[]} />
               <div className="md:col-span-2 flex justify-end">
                 <Button type="submit">حفظ — توليد كود وإيصال السداد الأول</Button>
               </div>

@@ -34,6 +34,67 @@ async function uploadPhoto(academyId: string, fd: FormData, key: string) {
   return path;
 }
 
+/**
+ * Reads custom-field values from FormData (named `custom__<field_key>`) and
+ * upserts them onto the player. Files are uploaded to the private bucket.
+ * Filter `visibilityFlag` selects which definitions to read (e.g. fields shown
+ * on the admin-create form vs. the join form vs. the profile-edit form).
+ */
+async function saveCustomValuesFromForm(
+  sb: Awaited<ReturnType<typeof createClient>>,
+  academyId: string,
+  playerId: string,
+  fd: FormData,
+  visibilityFlag: "show_on_join" | "show_on_admin_create" | "show_on_profile",
+) {
+  const { data: defs } = await sb.from("custom_field_definitions")
+    .select("*")
+    .eq("academy_id", academyId)
+    .eq("active", true)
+    .eq(visibilityFlag, true);
+  if (!defs || defs.length === 0) return;
+
+  // Existing values keyed by field_definition_id (so blank file inputs keep prior file)
+  const { data: existing } = await sb.from("player_custom_values")
+    .select("field_definition_id, value")
+    .eq("player_id", playerId);
+  const prior = new Map((existing ?? []).map((r: any) => [r.field_definition_id, r.value]));
+
+  const admin = createAdminClient();
+  const rows: { player_id: string; field_definition_id: string; value: string | null }[] = [];
+
+  for (const f of defs as any[]) {
+    const key = `custom__${f.field_key}`;
+    let value: string | null = null;
+
+    if (f.field_type === "file") {
+      const file = fd.get(key) as File | null;
+      if (file && typeof file !== "string" && file.size > 0) {
+        const ext = (file.name.split(".").pop() ?? "bin").toLowerCase();
+        const path = `${academyId}/players/${playerId}/custom/${crypto.randomUUID()}.${ext}`;
+        const { error } = await admin.storage.from("join-docs").upload(path, file, {
+          contentType: file.type || "application/octet-stream",
+          upsert: false,
+        });
+        value = error ? (prior.get(f.id) as string | null) ?? null : path;
+      } else {
+        value = (prior.get(f.id) as string | null) ?? null;
+      }
+    } else if (f.field_type === "checkbox") {
+      value = fd.get(key) ? "true" : null;
+    } else {
+      const raw = fd.get(key);
+      value = (typeof raw === "string" && raw.trim()) ? raw.trim() : null;
+    }
+
+    rows.push({ player_id: playerId, field_definition_id: f.id, value });
+  }
+
+  if (rows.length > 0) {
+    await sb.from("player_custom_values").upsert(rows, { onConflict: "player_id,field_definition_id" });
+  }
+}
+
 export async function createPlayer(academyId: string, fd: FormData) {
   await requireAcademyManager(academyId);
   const parsed = playerSchema.safeParse(Object.fromEntries(fd));
@@ -64,6 +125,9 @@ export async function createPlayer(academyId: string, fd: FormData) {
   }).select("id").single();
 
   if (error) return { error: error.message };
+
+  // Save any custom-field values submitted with the form.
+  await saveCustomValuesFromForm(sb, academyId, data!.id, fd, "show_on_admin_create");
 
   // Provision login account + link it. Reuses the idempotent invitePlayer flow
   // which handles "email already exists" gracefully (resets password instead).
@@ -102,8 +166,62 @@ export async function updatePlayer(academyId: string, playerId: string, fd: Form
   if (newPhoto) update.photo_url = newPhoto;
 
   await sb.from("players").update(update).eq("id", playerId).eq("academy_id", academyId);
+
+  // Custom fields shown on profile-edit form
+  await saveCustomValuesFromForm(sb, academyId, playerId, fd, "show_on_profile");
+
   revalidatePath(`/academy/${academyId}/players`);
   revalidatePath(`/academy/${academyId}/players/${playerId}`);
+}
+
+/** Add an ad-hoc field directly to one player (no global definition). */
+export async function addAdHocPlayerField(
+  academyId: string,
+  playerId: string,
+  label: string,
+  value: string,
+): Promise<{ ok?: boolean; error?: string }> {
+  await requireAcademyManager(academyId);
+  const trimmedLabel = label.trim();
+  if (trimmedLabel.length < 1) return { error: "اسم الحقل مطلوب" };
+  const sb = await createClient();
+  const { error } = await sb.from("player_custom_values").insert({
+    player_id: playerId,
+    ad_hoc_label: trimmedLabel,
+    value: value.trim() || null,
+  });
+  if (error) return { error: error.message };
+  revalidatePath(`/academy/${academyId}/players/${playerId}`);
+  return { ok: true };
+}
+
+export async function updateAdHocPlayerField(
+  academyId: string,
+  valueId: string,
+  label: string,
+  value: string,
+): Promise<{ ok?: boolean; error?: string }> {
+  await requireAcademyManager(academyId);
+  const sb = await createClient();
+  const { error } = await sb.from("player_custom_values")
+    .update({ ad_hoc_label: label.trim(), value: value.trim() || null })
+    .eq("id", valueId)
+    .is("field_definition_id", null); // ad-hoc only
+  if (error) return { error: error.message };
+  revalidatePath(`/academy/${academyId}/players`);
+  return { ok: true };
+}
+
+export async function deletePlayerCustomValue(
+  academyId: string,
+  valueId: string,
+): Promise<{ ok?: boolean; error?: string }> {
+  await requireAcademyManager(academyId);
+  const sb = await createClient();
+  const { error } = await sb.from("player_custom_values").delete().eq("id", valueId);
+  if (error) return { error: error.message };
+  revalidatePath(`/academy/${academyId}/players`);
+  return { ok: true };
 }
 
 export async function deletePlayer(academyId: string, playerId: string) {

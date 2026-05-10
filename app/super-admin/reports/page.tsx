@@ -44,7 +44,7 @@ export default async function SuperAdminReportsPage() {
     <>
       <PageHeader
         title="التقارير الموحدة"
-        description="مقارنة مالية وأداء بين كل الأكاديميات"
+        description="مقارنة مالية وأداء بين كل القطاعات"
         actions={<PrintExport filename="super-admin-report" />}
       />
       <PageBody>
@@ -54,7 +54,7 @@ export default async function SuperAdminReportsPage() {
             <Table>
               <THead>
                 <Tr>
-                  <Th>الأكاديمية</Th><Th>التحصيل</Th><Th>إيرادات إضافية</Th>
+                  <Th>القطاع</Th><Th>التحصيل</Th><Th>إيرادات إضافية</Th>
                   <Th>المصروفات</Th><Th>صافي الربح</Th><Th>المتأخرات</Th>
                   <Th>تحصيل الشهر %</Th>
                 </Tr>

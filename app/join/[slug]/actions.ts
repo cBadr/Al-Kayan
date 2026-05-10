@@ -55,6 +55,26 @@ export async function submitJoinRequest(academyId: string, slug: string, fd: For
   const photoPath = await uploadIfPresent(admin, academyId, fd, "photo");
   const idDocPath = await uploadIfPresent(admin, academyId, fd, "id_doc");
 
+  // Custom fields collected for this academy: upload files + capture text values.
+  const { data: customDefs } = await admin.from("custom_field_definitions")
+    .select("*")
+    .eq("academy_id", academyId)
+    .eq("active", true)
+    .eq("show_on_join", true);
+
+  const customValues: Record<string, string | null> = {};
+  for (const def of (customDefs ?? []) as any[]) {
+    const key = `custom__${def.field_key}`;
+    if (def.field_type === "file") {
+      customValues[def.field_key] = await uploadIfPresent(admin, academyId, fd, key);
+    } else if (def.field_type === "checkbox") {
+      customValues[def.field_key] = fd.get(key) ? "true" : null;
+    } else {
+      const v = fd.get(key);
+      customValues[def.field_key] = (typeof v === "string" && v.trim()) ? v.trim() : null;
+    }
+  }
+
   const data = {
     academy_id: academyId,
     full_name: fullName,
@@ -67,6 +87,7 @@ export async function submitJoinRequest(academyId: string, slug: string, fd: For
     desired_category_id: (fd.get("desired_category_id") as string) || null,
     photo_url: photoPath,
     id_doc_url: idDocPath,
+    custom_values: customValues,
     status: "pending" as const,
   };
 

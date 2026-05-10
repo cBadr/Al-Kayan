@@ -65,6 +65,25 @@ export async function approveRequest(academyId: string, requestId: string, fd: F
     );
   }
 
+  // Materialize custom-field values from the join_request into player_custom_values
+  const customValues = (req.custom_values ?? {}) as Record<string, string | null>;
+  if (Object.keys(customValues).length > 0) {
+    const { data: defs } = await sb.from("custom_field_definitions")
+      .select("id, field_key")
+      .eq("academy_id", academyId);
+    const defByKey = new Map((defs ?? []).map((d: any) => [d.field_key, d.id]));
+    const rows = Object.entries(customValues)
+      .filter(([key, val]) => val != null && defByKey.has(key))
+      .map(([key, val]) => ({
+        player_id: player!.id,
+        field_definition_id: defByKey.get(key)!,
+        value: val,
+      }));
+    if (rows.length > 0) {
+      await sb.from("player_custom_values").upsert(rows, { onConflict: "player_id,field_definition_id" });
+    }
+  }
+
   await sb.from("join_requests").update({
     status: "approved",
     reviewed_by: me.id,

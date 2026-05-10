@@ -58,3 +58,17 @@ export async function updateAcademy(id: string, formData: FormData) {
   revalidatePath(`/super-admin/academies/${id}`);
   return { ok: true };
 }
+
+/**
+ * Permanently delete an academy and ALL its data (cascade: players, trainings,
+ * matches, finances, notifications, audit log, etc.). This is irreversible.
+ * Only super admins can call this.
+ */
+export async function deleteAcademy(id: string): Promise<{ ok?: boolean; error?: string }> {
+  await requireSuperAdmin();
+  const sb = await createClient();
+  const { error } = await sb.from("academies").delete().eq("id", id);
+  if (error) return { error: error.message };
+  revalidatePath("/super-admin/academies");
+  return { ok: true };
+}

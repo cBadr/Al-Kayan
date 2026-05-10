@@ -8,6 +8,8 @@ import { requireAcademyManager } from "@/lib/auth/rbac";
 import { signedUrl } from "@/lib/storage";
 import { updatePlayer, deletePlayer, invitePlayer } from "../../actions";
 import { InviteCard } from "./invite-card";
+import { CustomFieldsRenderer } from "@/components/custom-fields-renderer";
+import type { CustomFieldDefinition } from "@/lib/custom-fields";
 import Link from "next/link";
 
 export default async function EditPlayerPage({ params }: { params: Promise<{ academyId: string; playerId: string }> }) {
@@ -18,6 +20,25 @@ export default async function EditPlayerPage({ params }: { params: Promise<{ aca
   if (!p) return <PageBody><p>اللاعب غير موجود</p></PageBody>;
   const { data: cats } = await sb.from("categories").select("id, name").eq("academy_id", academyId);
   const photo = await signedUrl(p.photo_url);
+
+  const { data: customFields } = await sb.from("custom_field_definitions")
+    .select("*")
+    .eq("academy_id", academyId)
+    .eq("active", true)
+    .eq("show_on_profile", true)
+    .order("display_order");
+
+  const { data: existingValues } = await sb.from("player_custom_values")
+    .select("field_definition_id, value")
+    .eq("player_id", playerId)
+    .not("field_definition_id", "is", null);
+
+  // Build a defaults map keyed by field_key for the renderer.
+  const valueByDefId = new Map((existingValues ?? []).map((r: any) => [r.field_definition_id, r.value]));
+  const defaultValues: Record<string, string | null> = {};
+  for (const f of (customFields ?? []) as any[]) {
+    defaultValues[f.field_key] = valueByDefId.get(f.id) ?? null;
+  }
 
   return (
     <>
@@ -90,6 +111,11 @@ export default async function EditPlayerPage({ params }: { params: Promise<{ aca
                   <option value="archived">مؤرشف</option>
                 </select>
               </div>
+
+              <CustomFieldsRenderer
+                fields={(customFields ?? []) as CustomFieldDefinition[]}
+                defaultValues={defaultValues}
+              />
 
               <div className="md:col-span-2 flex justify-between items-center pt-3 border-t border-border">
                 <form action={async () => { "use server"; await deletePlayer(academyId, playerId); }}>

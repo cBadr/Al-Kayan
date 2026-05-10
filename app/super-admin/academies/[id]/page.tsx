@@ -12,7 +12,7 @@ export default async function AcademyDetail({ params }: { params: Promise<{ id: 
   const { id } = await params;
   const sb = await createClient();
   const { data: a } = await sb.from("academies").select("*").eq("id", id).maybeSingle();
-  if (!a) return <PageBody><p>الأكاديمية غير موجودة</p></PageBody>;
+  if (!a) return <PageBody><p>القطاع غير موجود</p></PageBody>;
 
   const { data: managers } = await sb
     .from("memberships")
@@ -25,7 +25,7 @@ export default async function AcademyDetail({ params }: { params: Promise<{ id: 
       <PageHeader
         title={a.name}
         description={`المعرّف: ${a.slug}`}
-        actions={<Button asChild variant="outline"><Link href={`/academy/${id}`}>الدخول إلى لوحة الأكاديمية</Link></Button>}
+        actions={<Button asChild variant="outline"><Link href={`/academy/${id}`}>الدخول إلى لوحة {a.name}</Link></Button>}
       />
       <PageBody>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

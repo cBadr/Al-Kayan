@@ -11,7 +11,8 @@ export default async function SuperAdminLayout({ children }: { children: React.R
       user={{ fullName: user.fullName, email: user.email, roleLabel: "Super Admin" }}
       nav={[
         { href: "/super-admin", label: "اللوحة الرئيسية" },
-        { href: "/super-admin/academies", label: "الأكاديميات" },
+        { href: "/super-admin/academies", label: "القطاعات" },
+        { href: "/super-admin/landing", label: "إدارة الواجهة (CMS)" },
         { href: "/super-admin/users", label: "المستخدمون" },
         { href: "/super-admin/reports", label: "التقارير الموحدة" },
         { href: "/super-admin/settings", label: "إعدادات النظام" },

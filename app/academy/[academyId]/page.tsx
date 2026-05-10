@@ -11,6 +11,7 @@ export default async function AcademyDashboard({ params }: { params: Promise<{ a
   const { academyId } = await params;
   const sb = await createClient();
   const [
+    { data: academy },
     { count: playersCount },
     { count: categoriesCount },
     { count: pendingCount },
@@ -18,6 +19,7 @@ export default async function AcademyDashboard({ params }: { params: Promise<{ a
     { count: trainingsThisWeek },
     { data: nextTrainings },
   ] = await Promise.all([
+    sb.from("academies").select("name").eq("id", academyId).maybeSingle(),
     sb.from("players").select("id", { count: "exact", head: true }).eq("academy_id", academyId).eq("status", "active"),
     sb.from("categories").select("id", { count: "exact", head: true }).eq("academy_id", academyId),
     sb.from("join_requests").select("id", { count: "exact", head: true }).eq("academy_id", academyId).eq("status", "pending"),
@@ -34,7 +36,7 @@ export default async function AcademyDashboard({ params }: { params: Promise<{ a
 
   return (
     <>
-      <PageHeader title="لوحة الأكاديمية" description="نظرة عامة على الأنشطة والمالية" />
+      <PageHeader title={`لوحة ${academy?.name ?? "الأكاديمية"}`} description="نظرة عامة على الأنشطة والمالية" />
       <PageBody>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 stagger">
           <StatCard label="اللاعبون النشطون" value={String(playersCount ?? 0)} icon={<Users className="w-6 h-6" />} accent="emerald" />

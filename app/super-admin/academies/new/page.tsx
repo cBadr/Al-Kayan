@@ -8,12 +8,12 @@ import { createAcademy } from "../actions";
 export default function NewAcademyPage() {
   return (
     <>
-      <PageHeader title="إضافة أكاديمية جديدة" description="بيانات الأكاديمية الأساسية" />
+      <PageHeader title="إضافة قطاع جديد" description="بيانات القطاع الأساسية" hidePrint />
       <PageBody>
         <Card className="max-w-2xl">
           <CardContent className="pt-6">
             <form action={async (fd) => { "use server"; await createAcademy(fd); }} className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Field name="name" label="اسم الأكاديمية" required />
+              <Field name="name" label="اسم القطاع" required />
               <Field name="slug" label="المعرّف (slug)" dir="ltr" required placeholder="my-academy" />
               <Field name="phone" label="الهاتف" dir="ltr" />
               <Field name="whatsapp" label="واتساب" dir="ltr" />

@@ -334,6 +334,65 @@ table th, table td { white-space: nowrap; }
 /* Allow wrapping for cells explicitly opted in */
 table .cell-wrap, table .cell-wrap * { white-space: normal; }
 
+/* ----------------------------------------------------------------
+   Landing-page animations + decorative effects
+   ---------------------------------------------------------------- */
+@keyframes spin-slow { to { transform: rotate(360deg); } }
+@keyframes drift {
+  0%, 100% { transform: translate(0, 0); }
+  50%      { transform: translate(20px, -15px); }
+}
+@keyframes glow-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(251, 191, 36, 0.55); }
+  70%      { box-shadow: 0 0 0 16px rgba(251, 191, 36, 0); }
+}
+@keyframes ball-bounce {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50%      { transform: translateY(-18px) rotate(180deg); }
+}
+@keyframes gradient-shift {
+  0%, 100% { background-position: 0% 50%; }
+  50%      { background-position: 100% 50%; }
+}
+@keyframes marquee-x {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+
+.animate-spin-slow      { animation: spin-slow 18s linear infinite; }
+.animate-drift          { animation: drift 8s ease-in-out infinite; }
+.animate-glow-pulse     { animation: glow-pulse 2.4s ease-out infinite; }
+.animate-ball-bounce    { animation: ball-bounce 2.6s ease-in-out infinite; }
+.animate-marquee        { animation: marquee-x 36s linear infinite; }
+
+/* Animated gradient background utility */
+.bg-anim-gradient {
+  background-size: 200% 200%;
+  animation: gradient-shift 12s ease infinite;
+}
+
+/* Reusable card hover lift */
+.lift-on-hover {
+  transition: transform .3s ease, box-shadow .3s ease, border-color .3s ease;
+}
+.lift-on-hover:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 18px 40px -10px rgba(6, 95, 70, 0.25);
+}
+
+/* Decorative dotted noise overlay */
+.noise-overlay {
+  background-image: radial-gradient(rgba(255,255,255,0.06) 1px, transparent 1px);
+  background-size: 18px 18px;
+}
+
+/* Pretty section divider (gold) */
+.divider-x-gold {
+  width: 64px; height: 4px;
+  background: linear-gradient(90deg, #fbbf24, #d97706);
+  border-radius: 9999px;
+}
+
 /* Mobile responsive defaults */
 @media (max-width: 640px) {
   /* Hero numbers shrink so they don't overflow on small screens */
