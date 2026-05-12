@@ -2,7 +2,7 @@ import { PageBody, PageHeader } from "@/components/app-shell";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
+import { SubmitButton } from "@/components/ui/submit-button";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentUser } from "@/lib/auth/rbac";
 import { redirect } from "next/navigation";
@@ -97,7 +97,7 @@ export default async function NewPlayerPage({ params }: { params: Promise<{ acad
 
               <CustomFieldsRenderer fields={(customFields ?? []) as CustomFieldDefinition[]} />
               <div className="md:col-span-2 flex justify-end">
-                <Button type="submit">حفظ — توليد كود وإيصال السداد الأول</Button>
+                <SubmitButton pendingLabel="جارٍ إنشاء اللاعب وحساب الدخول...">حفظ — توليد كود وإيصال السداد الأول</SubmitButton>
               </div>
             </form>
           </CardContent>

@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
+import { SubmitButton } from "@/components/ui/submit-button";
 import { submitJoinRequest } from "./actions";
 import { CustomFieldsRenderer } from "@/components/custom-fields-renderer";
 import type { CustomFieldDefinition } from "@/lib/custom-fields";
@@ -61,7 +61,7 @@ export default async function JoinFormPage({ params }: {
             <CustomFieldsRenderer fields={(customFields ?? []) as CustomFieldDefinition[]} />
 
             <div className="md:col-span-2 flex justify-end">
-              <Button type="submit">إرسال الطلب</Button>
+              <SubmitButton pendingLabel="جارٍ إرسال الطلب...">إرسال الطلب</SubmitButton>
             </div>
           </form>
         </CardContent>

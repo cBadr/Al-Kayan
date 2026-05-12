@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,9 +11,12 @@ export function ForgotPasswordForm() {
   const [loading, setLoading] = useState(false);
   const [done, setDone] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const submittingRef = useRef(false);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (submittingRef.current) return;
+    submittingRef.current = true;
     setLoading(true);
     setError(null);
     const sb = createClient();
@@ -21,6 +24,7 @@ export function ForgotPasswordForm() {
       typeof window !== "undefined" ? `${window.location.origin}/reset-password` : undefined;
     const { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo });
     setLoading(false);
+    submittingRef.current = false;
     if (error) setError(error.message);
     else setDone(true);
   }
@@ -49,8 +53,13 @@ export function ForgotPasswordForm() {
           {error}
         </div>
       )}
-      <Button type="submit" className="w-full text-base h-11" disabled={loading}>
-        {loading ? "جارٍ الإرسال..." : "إرسال رابط الاستعادة"}
+      <Button type="submit" className="w-full text-base h-11" disabled={loading} aria-busy={loading}>
+        {loading ? (
+          <span className="inline-flex items-center gap-2">
+            <span aria-hidden className="inline-block w-3.5 h-3.5 rounded-full border-2 border-current border-t-transparent animate-spin" />
+            جارٍ الإرسال...
+          </span>
+        ) : "إرسال رابط الاستعادة"}
       </Button>
     </form>
   );
