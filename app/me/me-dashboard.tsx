@@ -9,6 +9,7 @@ import { LogoutButton } from "@/components/logout-button";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { MeProfileForm } from "./profile-form";
 import { ChangePasswordForm } from "./password-form";
+import { CalendarSubscribeCard } from "@/components/calendar-subscribe-card";
 
 type Section =
   | "overview"
@@ -48,11 +49,12 @@ export function MeDashboard(props: {
   rank: { goalsRank: number | null; minutesRank: number | null; attendanceRank: number | null; total: number };
   achievements: { id: string; label: string; icon: string; earned: boolean; description: string }[];
   streaks: { currentPresent: number; longestPresent: number; lastNAttendanceRate: number };
+  calendar?: { token: string | null; enabled: boolean; name: string | null };
 }) {
   const {
     player, photoUrl, subs, notifications, upcomingTrainings, upcomingMatches,
     attRecords, matchParts, discipline, attSummary, matchSummary,
-    rank, achievements, streaks,
+    rank, achievements, streaks, calendar,
   } = props;
 
   const [section, setSection] = useState<Section>("overview");
@@ -125,7 +127,11 @@ export function MeDashboard(props: {
             />
           )}
           {section === "schedule" && (
-            <ScheduleSection upcomingTrainings={upcomingTrainings} upcomingMatches={upcomingMatches} />
+            <ScheduleSection
+              upcomingTrainings={upcomingTrainings}
+              upcomingMatches={upcomingMatches}
+              calendar={calendar}
+            />
           )}
           {section === "matches" && (
             <MatchesSection matchParts={matchParts} matchSummary={matchSummary} />
@@ -470,9 +476,17 @@ function PerformanceSection({ attSummary, matchSummary, discipline, rank, streak
 /* ============================================================================
    SCHEDULE
    ========================================================================= */
-function ScheduleSection({ upcomingTrainings, upcomingMatches }: any) {
+function ScheduleSection({ upcomingTrainings, upcomingMatches, calendar }: any) {
   return (
     <>
+      {calendar?.enabled && (
+        <CalendarSubscribeCard
+          initialToken={calendar.token ?? null}
+          enabled={calendar.enabled}
+          calendarName={calendar.name}
+        />
+      )}
+
       <Card>
         <CardHeader><CardTitle>📅 التدريبات القادمة</CardTitle></CardHeader>
         <CardContent>

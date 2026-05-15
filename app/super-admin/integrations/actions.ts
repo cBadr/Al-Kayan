@@ -71,3 +71,20 @@ function textOrNull(v: FormDataEntryValue | null): string | null {
   const t = v.trim();
   return t || null;
 }
+
+/* ============================================================================
+   Google Calendar Sync (.ics feed)
+   ========================================================================= */
+export async function saveCalendarIntegration(fd: FormData): Promise<{ ok?: boolean; error?: string }> {
+  await requireSuperAdmin();
+  const sb = await createClient();
+  const update = {
+    gcal_enabled: fd.get("gcal_enabled") === "on",
+    gcal_default_calendar_name: textOrNull(fd.get("gcal_default_calendar_name")),
+  };
+  const { error } = await sb.from("integrations_settings").update(update).eq("id", 1);
+  if (error) return { error: error.message };
+  revalidatePath("/", "layout");
+  revalidatePath("/super-admin/integrations");
+  return { ok: true };
+}

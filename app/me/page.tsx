@@ -5,6 +5,7 @@ import { LogoutButton } from "@/components/logout-button";
 import { BrandLogo } from "@/components/logo";
 import { signedUrl } from "@/lib/storage";
 import { MeDashboard } from "./me-dashboard";
+import { getIntegrationsSettings } from "@/lib/integrations";
 
 export const dynamic = "force-dynamic";
 
@@ -218,6 +219,10 @@ export default async function MePage() {
     },
   ];
 
+  // Calendar subscription (Google Calendar Sync feature)
+  const integrations = await getIntegrationsSettings();
+  const { data: profile } = await sb.from("profiles").select("calendar_token").eq("id", me.id).maybeSingle();
+
   return (
     <MeDashboard
       player={player}
@@ -234,6 +239,11 @@ export default async function MePage() {
       rank={rank}
       achievements={achievements}
       streaks={{ currentPresent, longestPresent, lastNAttendanceRate }}
+      calendar={{
+        token: (profile as any)?.calendar_token ?? null,
+        enabled: integrations.gcal_enabled,
+        name: integrations.gcal_default_calendar_name,
+      }}
     />
   );
 }

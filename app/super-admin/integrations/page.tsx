@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { requireSuperAdmin } from "@/lib/auth/rbac";
 import { createClient } from "@/lib/supabase/server";
 import { GoogleIntegrationsForm } from "./google-form";
+import { CalendarIntegrationForm } from "./calendar-form";
 
 export const dynamic = "force-dynamic";
 
@@ -37,13 +38,25 @@ export default async function IntegrationsPage() {
             </CardContent>
           </Card>
 
-          {/* Future integrations land here as additional cards */}
-          <Card className="opacity-60">
+          {/* Calendar Sync */}
+          <Card>
             <CardHeader>
-              <CardTitle className="text-base">📅 Google Calendar Sync</CardTitle>
-              <p className="text-xs text-muted-foreground mt-1">قريباً — اشتراك في تقويم الأكاديمية من تقويم Google الشخصي.</p>
+              <CardTitle className="flex items-center gap-2">
+                <span className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-emerald-600 text-white text-base">
+                  📅
+                </span>
+                Google Calendar Sync
+              </CardTitle>
+              <p className="text-xs text-muted-foreground mt-1">
+                مشاركة جدول التدريبات والمباريات مع تقويم المستخدم (Google / Apple / Outlook) عبر iCalendar feed.
+              </p>
             </CardHeader>
+            <CardContent>
+              <CalendarIntegrationForm settings={settings} />
+            </CardContent>
           </Card>
+
+          {/* Future integrations placeholder */}
           <Card className="opacity-60">
             <CardHeader>
               <CardTitle className="text-base">🛡 Google reCAPTCHA</CardTitle>
