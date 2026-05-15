@@ -13,6 +13,7 @@ export default async function SuperAdminLayout({ children }: { children: React.R
         { href: "/super-admin", label: "اللوحة الرئيسية" },
         { href: "/super-admin/academies", label: "القطاعات" },
         { href: "/super-admin/landing", label: "إدارة الواجهة (CMS)" },
+        { href: "/super-admin/integrations", label: "التكاملات الخارجية" },
         { href: "/super-admin/users", label: "المستخدمون" },
         { href: "/super-admin/reports", label: "التقارير الموحدة" },
         { href: "/super-admin/settings", label: "إعدادات النظام" },
