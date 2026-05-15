@@ -69,8 +69,10 @@ export async function setLineup(
   await requireAcademyAccess(academyId);
   const sb = await createClient();
 
-  if (starting.length > 11) return { error: "الفريق الأساسي 11 لاعب كحد أقصى" };
-  if (bench.length > 9) return { error: "الفريق الاحتياطي 9 لاعبين كحد أقصى" };
+  // Soft caps — support 5/7/11-a-side and other formats. 22 is FIFA-style upper
+  // bound. Edit constants here if the academy needs different limits.
+  if (starting.length > 22) return { error: "تجاوزت حد الفريق الأساسي (22 لاعب كحد أقصى)" };
+  if (bench.length > 22) return { error: "تجاوزت حد الفريق الاحتياطي (22 لاعب كحد أقصى)" };
 
   // Fetch existing rows so we keep stats (goals/cards/minutes) and only update lineup fields
   const { data: existing } = await sb.from("match_participations")
