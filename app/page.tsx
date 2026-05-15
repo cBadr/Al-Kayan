@@ -50,10 +50,14 @@ export default async function Home() {
             <NavLink href="#contact" label="تواصل" />
           </nav>
           <div className="flex items-center gap-2">
+            {/* Mobile: show login as primary CTA. Larger screens: login is outlined + join is the gold CTA. */}
             <Button asChild variant="outline" size="sm" className="hidden sm:inline-flex">
               <Link href="/login">دخول</Link>
             </Button>
-            <Button asChild size="sm" variant="gold">
+            <Button asChild size="sm" variant="gold" className="sm:hidden">
+              <Link href="/login">🔐 تسجيل الدخول</Link>
+            </Button>
+            <Button asChild size="sm" variant="gold" className="hidden sm:inline-flex">
               <Link href="/join">⚽ انضمام لاعب جديد</Link>
             </Button>
           </div>
