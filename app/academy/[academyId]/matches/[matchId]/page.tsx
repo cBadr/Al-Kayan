@@ -7,6 +7,7 @@ import { requireAcademyAccess } from "@/lib/auth/rbac";
 import { formatDate } from "@/lib/utils";
 import { LineupEditor } from "./lineup-editor";
 import { ParticipationManager } from "./participation-manager";
+import { updateMatch } from "../actions";
 import Link from "next/link";
 
 export default async function MatchDetail({ params }: { params: Promise<{ academyId: string; matchId: string }> }) {
@@ -94,7 +95,42 @@ export default async function MatchDetail({ params }: { params: Promise<{ academ
         {/* Lineup editor (pitch view) */}
         <Card className="mb-4">
           <CardHeader>
-            <CardTitle className="text-base">التشكيلة على الملعب</CardTitle>
+            <div className="flex items-start justify-between gap-3 flex-wrap">
+              <CardTitle className="text-base">التشكيلة على الملعب</CardTitle>
+              <form
+                action={async (fd) => { "use server"; await updateMatch(academyId, matchId, fd); }}
+                className="flex items-end gap-2 flex-wrap"
+              >
+                <div className="space-y-0.5">
+                  <label className="text-[10px] text-muted-foreground font-semibold">عدد الأساسي</label>
+                  <input
+                    name="max_starting"
+                    type="number"
+                    min={1}
+                    max={30}
+                    defaultValue={(match as any).max_starting ?? 11}
+                    className="h-8 w-20 rounded-md border border-border bg-card px-2 text-sm text-center"
+                  />
+                </div>
+                <div className="space-y-0.5">
+                  <label className="text-[10px] text-muted-foreground font-semibold">عدد الاحتياطي</label>
+                  <input
+                    name="max_bench"
+                    type="number"
+                    min={0}
+                    max={30}
+                    defaultValue={(match as any).max_bench ?? 9}
+                    className="h-8 w-20 rounded-md border border-border bg-card px-2 text-sm text-center"
+                  />
+                </div>
+                <button
+                  type="submit"
+                  className="h-8 px-3 rounded-md bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold"
+                >
+                  تحديث الحدود
+                </button>
+              </form>
+            </div>
           </CardHeader>
           <CardContent>
             <LineupEditor
@@ -103,6 +139,8 @@ export default async function MatchDetail({ params }: { params: Promise<{ academ
               players={(players ?? []) as any}
               participations={(parts ?? []) as any}
               defaultFormation={match.formation}
+              maxStarting={(match as any).max_starting ?? 11}
+              maxBench={(match as any).max_bench ?? 9}
             />
           </CardContent>
         </Card>

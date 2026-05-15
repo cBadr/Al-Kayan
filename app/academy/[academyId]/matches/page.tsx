@@ -159,6 +159,17 @@ export default async function MatchesPage({
                 <div></div>
 
                 <div className="md:col-span-3 mt-3">
+                  <h4 className="font-semibold text-sm text-emerald-900 mb-2">عدد لاعبي المباراة</h4>
+                  <p className="text-[11px] text-muted-foreground mb-2">
+                    ⚙️ تحكَّم في حجم الفريق لهذه المباراة بالذات — مثل 7 للبراعم، 11 للكبار، أو حتى 30 للمباريات الودية.
+                  </p>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div className="space-y-1.5"><Label htmlFor="max_starting">عدد الفريق الأساسي</Label><Input id="max_starting" name="max_starting" type="number" min={1} max={30} defaultValue={11} /></div>
+                    <div className="space-y-1.5"><Label htmlFor="max_bench">عدد الاحتياطي</Label><Input id="max_bench" name="max_bench" type="number" min={0} max={30} defaultValue={9} /></div>
+                  </div>
+                </div>
+
+                <div className="md:col-span-3 mt-3">
                   <h4 className="font-semibold text-sm text-emerald-900 mb-2">طاقم التحكيم</h4>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     <div className="space-y-1.5"><Label htmlFor="referee_name">اسم حكم الساحة</Label><Input id="referee_name" name="referee_name" /></div>

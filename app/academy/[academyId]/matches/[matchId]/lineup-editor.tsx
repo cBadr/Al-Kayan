@@ -27,9 +27,9 @@ interface ExistingPart {
   is_captain: boolean;
 }
 
-// Hard caps (also enforced server-side)
-const MAX_STARTING = 22;
-const MAX_BENCH = 22;
+// Absolute ceiling (also enforced via CHECK constraint on the DB).
+// Per-match caps come from `maxStarting`/`maxBench` props on the editor.
+const HARD_MAX = 30;
 const CUSTOM_KEY = "custom";
 
 // Formation presets: slot positions on a 100×100 pitch.
@@ -117,13 +117,21 @@ export function LineupEditor({
   players,
   participations,
   defaultFormation,
+  maxStarting = 11,
+  maxBench = 9,
 }: {
   academyId: string;
   matchId: string;
   players: Player[];
   participations: ExistingPart[];
   defaultFormation: string | null;
+  /** Per-match caps from the matches table. */
+  maxStarting?: number;
+  maxBench?: number;
 }) {
+  // Clamp to hard ceiling defensively.
+  const capStarting = Math.min(maxStarting, HARD_MAX);
+  const capBench = Math.min(maxBench, HARD_MAX);
   // Initial formation: stored value if known, else "4-3-3", else custom if has data without preset.
   const initialFormation = useMemo(() => {
     if (defaultFormation && FORMATIONS[defaultFormation]) return defaultFormation;
@@ -251,8 +259,8 @@ export function LineupEditor({
 
   // ---------- Slot management ----------
   function addCustomSlot() {
-    if (slots.length >= MAX_STARTING) {
-      setMsg(`الحد الأقصى ${MAX_STARTING} مركزاً على الملعب`);
+    if (slots.length >= capStarting) {
+      setMsg(`الحد الأقصى ${capStarting} مركزاً على الملعب`);
       return;
     }
     const id = `custom_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
@@ -330,7 +338,7 @@ export function LineupEditor({
   }
 
   function addToBench(playerId: string) {
-    if (bench.length >= MAX_BENCH) { setMsg(`الاحتياطي ${MAX_BENCH} لاعب كحد أقصى`); return; }
+    if (bench.length >= capBench) { setMsg(`الاحتياطي ${capBench} لاعب كحد أقصى`); return; }
     setBench((b) => [...b, playerId]);
     setPendingBench(false);
   }
@@ -384,8 +392,9 @@ export function LineupEditor({
         </div>
         <div className="text-sm">
           <strong className="text-emerald-700">{startingCount}/{slots.length}</strong> أساسي
+          <span className="text-[10px] text-muted-foreground"> (حد {capStarting})</span>
           <span className="mx-2 text-muted-foreground">·</span>
-          <strong>{bench.length}/{MAX_BENCH}</strong> احتياطي
+          <strong>{bench.length}/{capBench}</strong> احتياطي
           {isCustom && <span className="ms-2 text-[10px] text-amber-600 font-bold">⚡ وضع مخصص</span>}
         </div>
         <Button
@@ -393,7 +402,7 @@ export function LineupEditor({
           size="sm"
           variant="outline"
           onClick={addCustomSlot}
-          disabled={slots.length >= MAX_STARTING}
+          disabled={slots.length >= capStarting}
           title="إضافة مركز جديد على الملعب"
         >
           + إضافة مركز
@@ -566,12 +575,12 @@ export function LineupEditor({
           {/* Bench */}
           <div className="bg-white border border-border rounded-lg p-3">
             <div className="flex items-center justify-between mb-2">
-              <h4 className="font-bold text-sm">الاحتياطي ({bench.length}/{MAX_BENCH})</h4>
+              <h4 className="font-bold text-sm">الاحتياطي ({bench.length}/{capBench})</h4>
               <Button
                 size="sm"
                 variant={pendingBench ? "default" : "outline"}
                 onClick={() => { setPendingBench((v) => !v); setActiveSlot(null); }}
-                disabled={bench.length >= MAX_BENCH}
+                disabled={bench.length >= capBench}
               >
                 {pendingBench ? "اختر لاعباً ↓" : "+ إضافة"}
               </Button>

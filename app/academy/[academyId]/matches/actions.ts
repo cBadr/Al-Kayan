@@ -25,6 +25,8 @@ export async function createMatch(academyId: string, fd: FormData) {
     assistant2_phone: String(fd.get("assistant2_phone") ?? "") || null,
     observer_name: String(fd.get("observer_name") ?? "") || null,
     observer_phone: String(fd.get("observer_phone") ?? "") || null,
+    max_starting: clampSquad(fd.get("max_starting"), 11, 1, 30),
+    max_bench: clampSquad(fd.get("max_bench"), 9, 0, 30),
     notes: String(fd.get("notes") ?? "") || null,
   }).select("id").single();
   if (error) return { error: error.message };
@@ -48,6 +50,12 @@ export async function updateMatch(academyId: string, matchId: string, fd: FormDa
   if (fd.get("their_score") !== null && fd.get("their_score") !== "") update.their_score = Number(fd.get("their_score"));
   if (fd.get("duration_min")) update.duration_min = Number(fd.get("duration_min"));
   if (fd.get("match_type")) update.match_type = String(fd.get("match_type"));
+  if (fd.get("max_starting") != null && fd.get("max_starting") !== "") {
+    update.max_starting = clampSquad(fd.get("max_starting"), 11, 1, 30);
+  }
+  if (fd.get("max_bench") != null && fd.get("max_bench") !== "") {
+    update.max_bench = clampSquad(fd.get("max_bench"), 9, 0, 30);
+  }
   await sb.from("matches").update(update).eq("id", matchId).eq("academy_id", academyId);
   revalidatePath(`/academy/${academyId}/matches/${matchId}`);
 }
@@ -69,10 +77,22 @@ export async function setLineup(
   await requireAcademyAccess(academyId);
   const sb = await createClient();
 
-  // Soft caps — support 5/7/11-a-side and other formats. 22 is FIFA-style upper
-  // bound. Edit constants here if the academy needs different limits.
-  if (starting.length > 22) return { error: "تجاوزت حد الفريق الأساسي (22 لاعب كحد أقصى)" };
-  if (bench.length > 22) return { error: "تجاوزت حد الفريق الاحتياطي (22 لاعب كحد أقصى)" };
+  // Per-match caps: each match stores its own max_starting / max_bench so the
+  // admin can run a 7-a-side game with 7 starters or a friendly with 30 squad
+  // members. Hard ceiling 30 enforced via CHECK constraint in 0015 migration.
+  const { data: matchRow } = await sb.from("matches")
+    .select("max_starting, max_bench")
+    .eq("id", matchId)
+    .eq("academy_id", academyId)
+    .maybeSingle();
+  const maxStarting = (matchRow as any)?.max_starting ?? 11;
+  const maxBench = (matchRow as any)?.max_bench ?? 9;
+  if (starting.length > maxStarting) {
+    return { error: `الفريق الأساسي ${maxStarting} لاعب كحد أقصى لهذه المباراة (يمكن تعديل العدد من إعدادات المباراة)` };
+  }
+  if (bench.length > maxBench) {
+    return { error: `الفريق الاحتياطي ${maxBench} لاعب كحد أقصى لهذه المباراة (يمكن تعديل العدد من إعدادات المباراة)` };
+  }
 
   // Fetch existing rows so we keep stats (goals/cards/minutes) and only update lineup fields
   const { data: existing } = await sb.from("match_participations")
@@ -150,6 +170,13 @@ export async function removeParticipation(academyId: string, matchId: string, pl
   const sb = await createClient();
   await sb.from("match_participations").delete().eq("match_id", matchId).eq("player_id", playerId);
   revalidatePath(`/academy/${academyId}/matches/${matchId}`);
+}
+
+/** Parse a form field as an integer squad size with sensible fallback + clamp. */
+function clampSquad(raw: FormDataEntryValue | null, fallback: number, min: number, max: number): number {
+  const n = raw != null && raw !== "" ? Number(raw) : NaN;
+  if (!Number.isFinite(n)) return fallback;
+  return Math.max(min, Math.min(max, Math.round(n)));
 }
 
 export async function logInjury(academyId: string, fd: FormData) {
