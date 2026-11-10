@@ -443,3 +443,67 @@ table .cell-wrap, table .cell-wrap * { white-space: normal; }
   /* Headings show with anchor color so emerald comes through */
   h1, h2, h3 { color: #14532d !important; }
 }
+
+/* ── Blue Space Design System ──────────────────────────── */
+
+/* Gradient text — blue → cyan */
+.text-gradient-blue {
+  background: linear-gradient(135deg, #60A5FA 0%, #22D3EE 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Blue glowing card */
+.card-glow-blue {
+  transition: box-shadow 0.35s ease, border-color 0.35s ease, transform 0.35s ease;
+  will-change: transform;
+}
+.card-glow-blue:hover {
+  box-shadow: 0 0 48px rgba(59,130,246,0.14), 0 12px 40px rgba(0,0,0,0.3);
+  border-color: rgba(59,130,246,0.45) !important;
+  transform: translateY(-4px);
+}
+
+/* Animated glow-pulse blue */
+@keyframes glow-pulse-blue {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(59,130,246,0.5); }
+  70%       { box-shadow: 0 0 0 16px rgba(59,130,246,0); }
+}
+.animate-glow-pulse-blue { animation: glow-pulse-blue 2.4s ease-out infinite; }
+
+/* Blue mesh radial background overlay */
+.bg-mesh-blue {
+  background-image:
+    radial-gradient(ellipse at 15% 25%, rgba(37,99,235,0.12) 0%, transparent 55%),
+    radial-gradient(ellipse at 85% 75%, rgba(6,182,212,0.08) 0%, transparent 55%),
+    radial-gradient(ellipse at 55% 50%, rgba(37,99,235,0.05) 0%, transparent 70%);
+}
+
+/* Cyan section label line */
+.label-cyan::before {
+  content: "";
+  display: inline-block;
+  width: 24px;
+  height: 2px;
+  border-radius: 9999px;
+  background: #06B6D4;
+  margin-inline-end: 8px;
+  vertical-align: middle;
+}
+
+/* Gradient border trick via pseudo */
+.border-gradient-blue {
+  position: relative;
+  border: 1px solid transparent;
+  background-clip: padding-box;
+}
+.border-gradient-blue::after {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  background: linear-gradient(135deg, rgba(59,130,246,0.4), rgba(6,182,212,0.3), rgba(59,130,246,0.1));
+  z-index: -1;
+  pointer-events: none;
+}
