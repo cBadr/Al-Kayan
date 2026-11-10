@@ -968,60 +968,132 @@ function AchievementCard({ a }: { a: Achievement }) {
   );
 }
 
+/* Free Unsplash football/sports images — cycle by index */
+const CAREER_IMGS = [
+  "https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=112&h=112&fit=crop&auto=format&q=80",
+  "https://images.unsplash.com/photo-1540747913346-19212a4cf528?w=112&h=112&fit=crop&auto=format&q=80",
+  "https://images.unsplash.com/photo-1517466787929-bc90951d0974?w=112&h=112&fit=crop&auto=format&q=80",
+  "https://images.unsplash.com/photo-1431324155629-1a6deb1dec8d?w=112&h=112&fit=crop&auto=format&q=80",
+  "https://images.unsplash.com/photo-1529900748604-07564a03e7a6?w=112&h=112&fit=crop&auto=format&q=80",
+  "https://images.unsplash.com/photo-1551958219-acbc595f5890?w=112&h=112&fit=crop&auto=format&q=80",
+  "https://images.unsplash.com/photo-1560272564-c83b66b1ad12?w=112&h=112&fit=crop&auto=format&q=80",
+];
+
 function CareerTimeline({ stops }: { stops: CareerStop[] }) {
   return (
-    <div className="relative mt-6">
+    <div className="relative mt-8">
+      {/* Animated connector line */}
       <div
-        className="absolute end-4 sm:end-6 top-4 bottom-4 w-px"
-        style={{ background: `linear-gradient(to bottom, ${BLUE}88, ${CYAN}55, transparent)` }}
-      />
-      <ol className="space-y-4">
-        {stops.map((stop, i) => (
-          <Reveal key={stop.id} delay={i * 90}>
-            <li className="relative pe-14 sm:pe-18 group">
-              <span
-                className="absolute end-0 top-2 w-9 h-9 rounded-full flex items-center justify-center font-black text-sm shadow-lg ring-4 transition-transform group-hover:scale-110 ltr-numbers"
-                style={
-                  stop.is_current
-                    ? { background: `linear-gradient(135deg, ${BLUE}, ${CYAN})`, color: "#fff", ringColor: `${BLUE}33` }
-                    : { background: SURF2, color: "rgba(241,245,249,0.6)", ringColor: `${BORD}` }
-                }
-              >
-                {stops.length - i}
-              </span>
-              <div
-                className="rounded-xl border p-4 transition-all"
-                style={
-                  stop.is_current
-                    ? { background: "rgba(59,130,246,0.06)", borderColor: `${BLUE}44` }
-                    : { background: "rgba(255,255,255,0.03)", borderColor: BORD }
-                }
-              >
-                <div className="flex flex-wrap items-center justify-between gap-2 mb-1">
-                  <h4 className="font-black text-white text-sm">{stop.role}</h4>
+        className="absolute end-7 top-8 bottom-8 w-0.5 rounded-full overflow-hidden"
+        style={{ background: "rgba(59,130,246,0.08)" }}
+        aria-hidden="true"
+      >
+        <div className="connector-flow absolute inset-0" />
+      </div>
+
+      <ol className="space-y-5">
+        {stops.map((stop, i) => {
+          const img = CAREER_IMGS[i % CAREER_IMGS.length];
+          return (
+            <Reveal key={stop.id} delay={i * 90}>
+              <li className="relative pe-20 group">
+
+                {/* ── Photo circle ── */}
+                <div
+                  className={`absolute end-0 top-0 z-10 w-14 h-14 rounded-full overflow-hidden
+                    ${stop.is_current ? "ring-spin-gradient timeline-current-pulse" : ""}
+                    transition-transform duration-300 group-hover:scale-110`}
+                  style={
+                    stop.is_current
+                      ? {}
+                      : { boxShadow: "0 0 0 2px rgba(59,130,246,0.22), 0 4px 16px rgba(0,0,0,0.4)" }
+                  }
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={img}
+                    alt=""
+                    className="timeline-photo w-full h-full object-cover"
+                    style={{ filter: stop.is_current ? "brightness(1.05) saturate(1.1)" : "brightness(0.65) saturate(0.6)" }}
+                  />
+                  {/* gradient overlay bottom */}
+                  <div
+                    className="absolute inset-0"
+                    style={{
+                      background: stop.is_current
+                        ? "linear-gradient(to top, rgba(37,99,235,0.75) 0%, transparent 55%)"
+                        : "linear-gradient(to top, rgba(3,7,17,0.7) 0%, transparent 55%)",
+                    }}
+                  />
+                  {/* year inside circle */}
                   {stop.year && (
-                    <span
-                      className="text-[10px] font-bold px-2 py-0.5 rounded-full ltr-numbers"
-                      style={
-                        stop.is_current
-                          ? { background: "rgba(59,130,246,0.15)", color: "#93C5FD" }
-                          : { background: "rgba(255,255,255,0.05)", color: "rgba(241,245,249,0.4)" }
-                      }
+                    <div
+                      className="absolute bottom-1 inset-x-0 text-center text-[9px] font-black text-white ltr-numbers"
+                      style={{ textShadow: "0 1px 3px rgba(0,0,0,0.8)" }}
                     >
                       {stop.year}
-                    </span>
+                    </div>
+                  )}
+                  {/* current checkmark badge */}
+                  {stop.is_current && (
+                    <div
+                      className="absolute -top-1 -end-1 w-5 h-5 rounded-full flex items-center justify-center shadow-lg"
+                      style={{ background: `linear-gradient(135deg, ${BLUE}, ${CYAN})`, fontSize: 9, color: "#fff", fontWeight: 900 }}
+                    >
+                      ✓
+                    </div>
                   )}
                 </div>
-                {stop.organization && (
-                  <p className="text-xs font-semibold mb-1" style={{ color: `${CYAN}99` }}>{stop.organization}</p>
-                )}
-                {stop.description && (
-                  <p className="text-xs leading-relaxed" style={{ color: "rgba(241,245,249,0.4)" }}>{stop.description}</p>
-                )}
-              </div>
-            </li>
-          </Reveal>
-        ))}
+
+                {/* ── Card ── */}
+                <div
+                  className={`rounded-2xl border p-5 transition-all duration-300 group-hover:-translate-y-0.5 card-reveal
+                    ${stop.is_current ? "timeline-card-active" : ""}`}
+                  style={
+                    stop.is_current
+                      ? {
+                          background: "rgba(59,130,246,0.055)",
+                          borderColor: `${BLUE}44`,
+                          boxShadow: "0 4px 24px rgba(59,130,246,0.1)",
+                        }
+                      : { background: "rgba(255,255,255,0.025)", borderColor: "rgba(59,130,246,0.1)" }
+                  }
+                >
+                  <div className="flex flex-wrap items-start justify-between gap-2 mb-2">
+                    <h4 className="font-black text-white text-sm leading-snug">{stop.role}</h4>
+                    {stop.year && (
+                      <span
+                        className="text-[10px] font-bold px-2.5 py-1 rounded-full ltr-numbers shrink-0"
+                        style={
+                          stop.is_current
+                            ? { background: `${BLUE}22`, color: "#93C5FD", border: `1px solid ${BLUE}44` }
+                            : { background: "rgba(255,255,255,0.05)", color: "rgba(241,245,249,0.35)" }
+                        }
+                      >
+                        {stop.year}
+                      </span>
+                    )}
+                  </div>
+                  {stop.organization && (
+                    <div className="flex items-center gap-1.5 mb-2">
+                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke={stop.is_current ? CYAN : "rgba(241,245,249,0.3)"} strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+                        <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/>
+                      </svg>
+                      <p className="text-xs font-semibold" style={{ color: stop.is_current ? `${CYAN}cc` : "rgba(241,245,249,0.35)" }}>
+                        {stop.organization}
+                      </p>
+                    </div>
+                  )}
+                  {stop.description && (
+                    <p className="text-xs leading-relaxed mt-1" style={{ color: "rgba(241,245,249,0.45)" }}>
+                      {stop.description}
+                    </p>
+                  )}
+                </div>
+              </li>
+            </Reveal>
+          );
+        })}
       </ol>
     </div>
   );
