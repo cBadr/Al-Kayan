@@ -38,20 +38,21 @@ export default async function Home() {
   return (
     <div className="flex-1 overflow-x-hidden" style={{ background: "#060d08", color: "#e8f0ea" }}>
 
-      {/* ── NAV ─────────────────────────────────────── */}
+      {/* ── NAV ──────────────────────────────────────── */}
       <header className="sticky top-0 z-40 glass-dark border-b border-[#fbbf24]/10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
           <Link href="/" className="flex items-center gap-2.5 group">
             <BrandLogo className="w-9 h-9 transition-transform group-hover:scale-105" rounded="rounded-xl" />
             <div className="leading-tight">
-              <div className="font-black text-white text-lg tracking-tight">{appSettings.app_name}</div>
-              <div className="text-[10px] text-[#fbbf24]/65 font-semibold tracking-widest uppercase">إدارة احترافية</div>
+              <div className="font-black text-white text-[17px] tracking-tight">{appSettings.app_name}</div>
+              <div className="text-[9px] text-[#fbbf24]/60 font-bold tracking-widest uppercase">إدارة احترافية</div>
             </div>
           </Link>
 
           <nav className="hidden md:flex items-center gap-1 text-sm font-semibold">
             {settings.show_founder && <NavLink href="#about" label="عن المؤسس" />}
             {settings.show_features && <NavLink href="#features" label="المميزات" />}
+            <NavLink href="#how" label="كيف يعمل" />
             {settings.show_gallery && gallery.length > 0 && <NavLink href="#gallery" label="المعرض" />}
             {settings.show_testimonials && <NavLink href="#testimonials" label="الآراء" />}
             <NavLink href="#contact" label="تواصل" />
@@ -61,7 +62,11 @@ export default async function Home() {
             <Button asChild variant="ghost" size="sm" className="hidden sm:inline-flex text-white/60 hover:text-white hover:bg-white/8">
               <Link href="/login">دخول</Link>
             </Button>
-            <Button asChild size="sm" className="bg-[#fbbf24] hover:bg-[#f59e0b] text-emerald-950 font-black shadow-lg shadow-[#fbbf24]/20 border-0 hover:scale-105 transition-all">
+            <Button
+              asChild
+              size="sm"
+              className="bg-[#fbbf24] hover:bg-[#f59e0b] text-emerald-950 font-black shadow-lg shadow-[#fbbf24]/20 border-0 hover:scale-105 transition-all"
+            >
               <Link href="/join">انضمام لاعب</Link>
             </Button>
           </div>
@@ -75,16 +80,120 @@ export default async function Home() {
         fallbackTagline={settings.brand_tagline}
       />
 
-      {/* ── STATS STRIP ──────────────────────────────── */}
-      <div className="py-8 border-y border-[#fbbf24]/8" style={{ background: "rgba(6,13,8,0.98)" }}>
-        <div className="max-w-5xl mx-auto px-4 sm:px-6">
-          <div className="grid grid-cols-3 divide-x divide-x-reverse divide-[#fbbf24]/12">
-            <StatPill value={8} suffix="+" label="سنوات خبرة" />
-            <StatPill value={500} suffix="+" label="لاعب مسجّل" />
-            <StatPill value={5} suffix="+" label="أكاديمية" />
+      {/* ── MARQUEE TICKER ───────────────────────────── */}
+      <div
+        className="relative overflow-hidden border-y border-[#fbbf24]/10 py-3"
+        style={{ background: "rgba(6,13,8,0.98)" }}
+        aria-hidden="true"
+      >
+        <div className="flex animate-marquee whitespace-nowrap" dir="ltr">
+          {[...Array(2)].map((_, pass) => (
+            <span key={pass} className="flex items-center shrink-0">
+              {TICKER_ITEMS.map((item, i) => (
+                <span key={i} className="inline-flex items-center gap-3 mx-6">
+                  <span
+                    className="inline-block w-1.5 h-1.5 rounded-full shrink-0"
+                    style={{ background: i % 2 === 0 ? "#fbbf24" : "#6ee7b7" }}
+                  />
+                  <span
+                    className="text-xs font-bold tracking-wide"
+                    style={{ color: i % 2 === 0 ? "rgba(255,255,255,0.65)" : "rgba(110,231,183,0.75)" }}
+                    dir="rtl"
+                  >
+                    {item}
+                  </span>
+                </span>
+              ))}
+            </span>
+          ))}
+        </div>
+      </div>
+
+      {/* ── STATS CARDS ──────────────────────────────── */}
+      <div className="py-10 md:py-14" style={{ background: "#060d08" }}>
+        <div className="max-w-6xl mx-auto px-4 sm:px-6">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+            <Reveal delay={0}><StatCard value={8} suffix="+" label="سنوات خبرة" icon={<IconYears />} color="gold" /></Reveal>
+            <Reveal delay={80}><StatCard value={500} suffix="+" label="لاعب مسجّل" icon={<IconPlayers />} color="emerald" /></Reveal>
+            <Reveal delay={160}><StatCard value={5} suffix="+" label="أكاديمية" icon={<IconAcademy />} color="sky" /></Reveal>
+            <Reveal delay={240}><StatCard value={50} suffix="+" label="معسكر تدريبي" icon={<IconCamp />} color="rose" /></Reveal>
           </div>
         </div>
       </div>
+
+      {/* ── HOW IT WORKS ─────────────────────────────── */}
+      <section id="how" className="py-20 md:py-28 relative overflow-hidden" style={{ background: "#040a06" }}>
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            backgroundImage:
+              "radial-gradient(circle at 50% 100%, rgba(16,185,129,0.07) 0%, transparent 65%)",
+          }}
+        />
+        <div className="relative max-w-5xl mx-auto px-4 sm:px-6">
+          <Reveal className="text-center mb-14">
+            <SectionLabel>البدء خطوة بخطوة</SectionLabel>
+            <h2
+              className="font-black text-white mt-3 leading-tight"
+              style={{ fontSize: "clamp(1.75rem, 4vw, 3.25rem)" }}
+            >
+              كيف يعمل النظام؟
+            </h2>
+            <p className="text-white/40 mt-3 max-w-xl mx-auto leading-relaxed text-sm md:text-base">
+              ثلاث خطوات بسيطة تبدأ بها رحلتك نحو إدارة أكاديمية محترفة
+            </p>
+          </Reveal>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 relative">
+            {/* connector line on desktop */}
+            <div
+              className="hidden md:block absolute top-10 start-[16.5%] end-[16.5%] h-px pointer-events-none"
+              style={{ background: "linear-gradient(90deg, rgba(251,191,36,0.3) 0%, rgba(16,185,129,0.3) 50%, rgba(251,191,36,0.3) 100%)" }}
+              aria-hidden="true"
+            />
+
+            {HOW_STEPS.map((step, i) => (
+              <Reveal key={i} delay={i * 120}>
+                <div className="relative text-center group">
+                  <div className="relative inline-block mb-6">
+                    <div
+                      className="w-20 h-20 rounded-2xl flex items-center justify-center mx-auto transition-all duration-300 group-hover:scale-110"
+                      style={{
+                        background: step.bg,
+                        boxShadow: `0 8px 32px ${step.glow}`,
+                        border: `1px solid ${step.border}`,
+                      }}
+                    >
+                      {step.icon}
+                    </div>
+                    <div
+                      className="absolute -top-3 -end-3 w-7 h-7 rounded-full flex items-center justify-center font-black text-xs"
+                      style={{ background: "#fbbf24", color: "#022c22" }}
+                    >
+                      {i + 1}
+                    </div>
+                  </div>
+                  <h3 className="font-black text-white text-lg md:text-xl mb-2">{step.title}</h3>
+                  <p className="text-white/42 text-sm leading-relaxed">{step.desc}</p>
+                </div>
+              </Reveal>
+            ))}
+          </div>
+
+          <Reveal className="text-center mt-12">
+            <a
+              href={wa}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 px-7 py-3.5 rounded-xl font-black text-sm transition-all hover:scale-105"
+              style={{ background: "#fbbf24", color: "#022c22", boxShadow: "0 6px 24px rgba(251,191,36,0.25)" }}
+            >
+              <IconWhatsApp />
+              ابدأ الآن مجاناً
+            </a>
+          </Reveal>
+        </div>
+      </section>
 
       {/* ── FOUNDER ──────────────────────────────────── */}
       {settings.show_founder && (
@@ -93,16 +202,21 @@ export default async function Home() {
 
             <Reveal className="mb-14">
               <SectionLabel>عن المؤسس</SectionLabel>
-              <h2 className="text-3xl md:text-5xl font-black mt-3 text-white">
+              <h2
+                className="font-black mt-3 text-white"
+                style={{ fontSize: "clamp(1.75rem, 4vw, 3.25rem)" }}
+              >
                 {settings.founder_section_title ?? "الرؤية خلف المنصة"}
               </h2>
               {settings.founder_section_subtitle && (
-                <p className="text-white/40 mt-3 max-w-xl leading-relaxed">{settings.founder_section_subtitle}</p>
+                <p className="text-white/40 mt-3 max-w-xl leading-relaxed text-sm md:text-base">
+                  {settings.founder_section_subtitle}
+                </p>
               )}
             </Reveal>
 
             <Reveal>
-              <div className="grid md:grid-cols-[320px_1fr] gap-10 lg:gap-16 items-start">
+              <div className="grid md:grid-cols-[300px_1fr] gap-10 lg:gap-16 items-start">
 
                 {/* Photo column */}
                 <div className="relative">
@@ -127,7 +241,6 @@ export default async function Home() {
                     )}
                   </div>
 
-                  {/* Year badge */}
                   <div
                     className="absolute -top-4 -end-4 w-20 h-20 rounded-xl flex flex-col items-center justify-center text-emerald-950 shadow-xl rotate-3"
                     style={{ background: "#fbbf24", boxShadow: "0 8px 24px rgba(251,191,36,0.35)" }}
@@ -191,7 +304,7 @@ export default async function Home() {
         </section>
       )}
 
-      {/* ── FEATURES (BENTO) ─────────────────────────── */}
+      {/* ── FEATURES ─────────────────────────────────── */}
       {settings.show_features && features.length > 0 && (
         <section id="features" className="py-20 md:py-32 relative overflow-hidden" style={{ background: "#040a06" }}>
           <div
@@ -199,13 +312,32 @@ export default async function Home() {
             style={{ background: "radial-gradient(ellipse, rgba(6,95,70,0.14) 0%, transparent 70%)" }}
           />
           <div className="relative max-w-7xl mx-auto px-4 sm:px-6">
-            <Reveal className="mb-14">
+            <Reveal className="mb-10">
               <SectionLabel>{settings.features_section_title ?? "المميزات"}</SectionLabel>
-              <h2 className="text-3xl md:text-5xl font-black mt-3 text-white max-w-2xl">
+              <h2
+                className="font-black mt-3 text-white max-w-2xl"
+                style={{ fontSize: "clamp(1.75rem, 4vw, 3.25rem)" }}
+              >
                 {settings.features_section_subtitle ?? "كل ما تحتاجه في مكان واحد"}
               </h2>
             </Reveal>
-            <BentoGrid features={features} />
+
+            {/* Mobile: horizontal snap-scroll */}
+            <div
+              className="md:hidden flex gap-4 overflow-x-auto pb-4 snap-x snap-mandatory"
+              style={{ scrollbarWidth: "none" }}
+            >
+              {features.map((f, i) => (
+                <div key={f.id} className="snap-start shrink-0 w-[75vw] max-w-[300px]" style={{ minHeight: 220 }}>
+                  <BentoFeatureCard feature={f} isHero={false} />
+                </div>
+              ))}
+            </div>
+
+            {/* Desktop: bento grid */}
+            <div className="hidden md:block">
+              <BentoGrid features={features} />
+            </div>
           </div>
         </section>
       )}
@@ -231,7 +363,7 @@ export default async function Home() {
       {settings.show_testimonials && testimonials.length > 0 && (
         <section id="testimonials" className="relative py-20 md:py-32 overflow-hidden" style={{ background: "#030808" }}>
           <div
-            className="absolute inset-0 opacity-20"
+            className="absolute inset-0 opacity-20 pointer-events-none"
             style={{
               backgroundImage:
                 "radial-gradient(circle at 20% 50%, rgba(16,185,129,0.15) 0%, transparent 60%), radial-gradient(circle at 80% 20%, rgba(251,191,36,0.10) 0%, transparent 50%)",
@@ -240,9 +372,12 @@ export default async function Home() {
           <div className="relative max-w-7xl mx-auto px-4 sm:px-6">
             <Reveal className="mb-14">
               <SectionLabel>{settings.testimonials_section_title ?? "الآراء والتقييمات"}</SectionLabel>
-              {settings.testimonials_section_subtitle && (
-                <p className="text-white/40 mt-2 max-w-xl text-sm">{settings.testimonials_section_subtitle}</p>
-              )}
+              <h2
+                className="font-black mt-3 text-white"
+                style={{ fontSize: "clamp(1.5rem, 3.5vw, 2.75rem)" }}
+              >
+                {settings.testimonials_section_subtitle ?? "ماذا يقول اللاعبون وأولياء الأمور؟"}
+              </h2>
             </Reveal>
             <div className="columns-1 md:columns-2 lg:columns-3 gap-5">
               {testimonials.map((t, i) => (
@@ -280,7 +415,10 @@ export default async function Home() {
                 ابدأ خلال دقائق — بدون تعقيدات
               </div>
 
-              <h2 className="text-4xl md:text-6xl font-black text-white leading-[1.1] mb-6">
+              <h2
+                className="font-black text-white leading-tight mb-6"
+                style={{ fontSize: "clamp(2rem, 6vw, 4rem)" }}
+              >
                 {settings.cta_title}
               </h2>
 
@@ -295,13 +433,11 @@ export default async function Home() {
                   href={wa}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2.5 px-8 py-4 rounded-xl font-black text-base transition-all hover:scale-105 hover:brightness-110"
+                  className="inline-flex items-center gap-2.5 px-8 py-4 rounded-xl font-black text-base transition-all hover:scale-105 hover:brightness-110 animate-glow-pulse"
                   style={{ background: "#fbbf24", color: "#022c22", boxShadow: "0 8px 32px rgba(251,191,36,0.28)" }}
                 >
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 00-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
-                  </svg>
-                  {settings.cta_button_label?.replace(/^[\s\S]*?[؀-ۿ]/, (m) => m) ?? "احجز عرضاً مجانياً عبر واتساب"}
+                  <IconWhatsApp />
+                  {settings.cta_button_label?.replace(/^[^؀-ۿ]+/, "") ?? "احجز عرضاً مجانياً عبر واتساب"}
                 </a>
                 {settings.contact_email && (
                   <a
@@ -370,6 +506,7 @@ export default async function Home() {
               {settings.show_features && (
                 <li><a href="#features" className="hover:text-[#fbbf24] transition-colors">المميزات</a></li>
               )}
+              <li><a href="#how" className="hover:text-[#fbbf24] transition-colors">كيف يعمل</a></li>
               {settings.show_gallery && gallery.length > 0 && (
                 <li><a href="#gallery" className="hover:text-[#fbbf24] transition-colors">المعرض</a></li>
               )}
@@ -424,6 +561,67 @@ export default async function Home() {
 }
 
 /* ═══════════════════════════════════════════════════════
+   STATIC DATA
+═══════════════════════════════════════════════════════ */
+
+const TICKER_ITEMS = [
+  "إدارة اللاعبين والحضور",
+  "تسجيل الرسوم والمدفوعات",
+  "تقارير وإحصائيات فورية",
+  "متابعة الأداء والمهارات",
+  "إشعارات للاعبين وأولياء الأمور",
+  "إدارة المدربين والجداول",
+  "تاريخ كامل للاعب",
+  "دعم متعدد الأكاديميات",
+];
+
+const HOW_STEPS = [
+  {
+    title: "سجّل أكاديميتك",
+    desc: "أنشئ حسابك وأعدّ بيانات الأكاديمية خلال دقائق دون أي تعقيد تقني",
+    bg: "rgba(251,191,36,0.08)",
+    glow: "rgba(251,191,36,0.18)",
+    border: "rgba(251,191,36,0.2)",
+    icon: (
+      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#fbbf24" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+        <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
+        <polyline points="9,22 9,12 15,12 15,22" />
+      </svg>
+    ),
+  },
+  {
+    title: "أضف اللاعبين والمدربين",
+    desc: "استورد أو أضف بيانات اللاعبين وحدد المدربين والمجموعات التدريبية",
+    bg: "rgba(16,185,129,0.08)",
+    glow: "rgba(16,185,129,0.18)",
+    border: "rgba(16,185,129,0.2)",
+    icon: (
+      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#6ee7b7" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+        <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" />
+        <circle cx="9" cy="7" r="4" />
+        <path d="M23 21v-2a4 4 0 00-3-3.87" />
+        <path d="M16 3.13a4 4 0 010 7.75" />
+      </svg>
+    ),
+  },
+  {
+    title: "أدر كل شيء من مكان واحد",
+    desc: "تابع الحضور والمدفوعات والأداء وأرسل الإشعارات — كل ذلك من لوحة تحكم موحدة",
+    bg: "rgba(56,189,248,0.08)",
+    glow: "rgba(56,189,248,0.18)",
+    border: "rgba(56,189,248,0.2)",
+    icon: (
+      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#7dd3fc" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+        <rect x="3" y="3" width="7" height="7" rx="1" />
+        <rect x="14" y="3" width="7" height="7" rx="1" />
+        <rect x="3" y="14" width="7" height="7" rx="1" />
+        <rect x="14" y="14" width="7" height="7" rx="1" />
+      </svg>
+    ),
+  },
+];
+
+/* ═══════════════════════════════════════════════════════
    ATOMS
 ═══════════════════════════════════════════════════════ */
 
@@ -449,13 +647,55 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
   );
 }
 
-function StatPill({ value, suffix, label }: { value: number; suffix?: string; label: string }) {
+/* ── Stat Card ───────────────────────────────────────── */
+
+const STAT_COLORS: Record<string, { iconBg: string; iconColor: string; glow: string; border: string }> = {
+  gold:    { iconBg: "rgba(251,191,36,0.1)",  iconColor: "#fbbf24",  glow: "rgba(251,191,36,0.1)",  border: "rgba(251,191,36,0.14)" },
+  emerald: { iconBg: "rgba(16,185,129,0.1)",  iconColor: "#6ee7b7",  glow: "rgba(16,185,129,0.1)",  border: "rgba(16,185,129,0.14)" },
+  sky:     { iconBg: "rgba(56,189,248,0.1)",  iconColor: "#7dd3fc",  glow: "rgba(56,189,248,0.1)",  border: "rgba(56,189,248,0.14)" },
+  rose:    { iconBg: "rgba(244,63,94,0.1)",   iconColor: "#fda4af",  glow: "rgba(244,63,94,0.1)",   border: "rgba(244,63,94,0.14)" },
+};
+
+function StatCard({
+  value,
+  suffix,
+  label,
+  icon,
+  color,
+}: {
+  value: number;
+  suffix?: string;
+  label: string;
+  icon: React.ReactNode;
+  color: string;
+}) {
+  const c = STAT_COLORS[color] ?? STAT_COLORS.gold;
   return (
-    <div className="text-center px-6 py-2">
-      <div className="text-3xl md:text-4xl font-black text-white">
-        <Counter value={value} suffix={suffix} />
+    <div
+      className="relative rounded-2xl p-5 border overflow-hidden group hover:scale-[1.02] transition-all duration-300"
+      style={{ background: "#0a150e", borderColor: c.border }}
+    >
+      <div
+        className="absolute -top-10 -end-10 w-32 h-32 rounded-full blur-3xl opacity-50 group-hover:opacity-80 transition-opacity pointer-events-none"
+        style={{ background: c.glow }}
+      />
+      <div className="relative flex items-start justify-between gap-3">
+        <div>
+          <div
+            className="text-3xl md:text-4xl font-black leading-none"
+            style={{ color: c.iconColor }}
+          >
+            <Counter value={value} suffix={suffix} />
+          </div>
+          <div className="text-xs text-white/40 mt-2 font-semibold">{label}</div>
+        </div>
+        <div
+          className="shrink-0 w-11 h-11 rounded-xl flex items-center justify-center"
+          style={{ background: c.iconBg, color: c.iconColor }}
+        >
+          {icon}
+        </div>
       </div>
-      <div className="text-xs text-white/35 mt-1 font-semibold">{label}</div>
     </div>
   );
 }
@@ -512,7 +752,7 @@ function BentoFeatureCard({ feature, isHero }: { feature: FeatureCard; isHero?: 
   const acc = DARK_ACCENT[feature.accent_color] ?? DARK_ACCENT.emerald;
   return (
     <div
-      className="group relative h-full rounded-2xl border border-white/8 overflow-hidden transition-all duration-300 hover:border-white/16 hover:shadow-2xl"
+      className="group relative h-full rounded-2xl border border-white/8 overflow-hidden transition-all duration-300 hover:border-white/16 hover:shadow-2xl lift-on-hover"
       style={{
         background: isHero
           ? "linear-gradient(135deg, #0a2010 0%, #071510 100%)"
@@ -564,12 +804,17 @@ function BentoFeatureCard({ feature, isHero }: { feature: FeatureCard; isHero?: 
 function TestimonialItem({ t }: { t: Testimonial }) {
   return (
     <div
-      className="rounded-2xl border border-white/8 p-6 relative overflow-hidden hover:border-white/14 transition-colors"
+      className="rounded-2xl border border-white/8 p-6 relative overflow-hidden hover:border-white/16 transition-all group"
       style={{ background: "#0d1710" }}
     >
+      {/* glow on hover */}
+      <div
+        className="absolute -top-16 -end-16 w-40 h-40 rounded-full blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
+        style={{ background: "radial-gradient(circle, rgba(16,185,129,0.1) 0%, transparent 70%)" }}
+      />
       <div
         className="absolute top-3 start-4 text-7xl font-black select-none leading-none pointer-events-none"
-        style={{ color: "rgba(16,185,129,0.12)", fontFamily: "Georgia, serif" }}
+        style={{ color: "rgba(16,185,129,0.1)", fontFamily: "Georgia, serif" }}
         aria-hidden="true"
       >
         "
@@ -584,15 +829,18 @@ function TestimonialItem({ t }: { t: Testimonial }) {
         </div>
         <p className="text-white/80 leading-[1.9] text-sm mb-5">"{t.quote}"</p>
         <div className="flex items-center gap-3 pt-4 border-t border-white/8">
-          <div
-            className="w-10 h-10 rounded-full overflow-hidden flex items-center justify-center font-black text-sm shrink-0"
-            style={{ background: "#0a2010", color: "#fbbf24" }}
-          >
+          {/* avatar with ring */}
+          <div className="avatar-ring shrink-0 w-11 h-11 rounded-full overflow-hidden flex items-center justify-center font-black text-sm">
             {t.author_photo_url ? (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={t.author_photo_url} alt="" className="w-full h-full object-cover" />
+              <img src={t.author_photo_url} alt="" className="w-full h-full object-cover rounded-full" />
             ) : (
-              t.author_name.charAt(0)
+              <div
+                className="w-full h-full flex items-center justify-center font-black text-sm rounded-full"
+                style={{ background: "#0a2010", color: "#fbbf24" }}
+              >
+                {t.author_name.charAt(0)}
+              </div>
             )}
           </div>
           <div className="min-w-0">
@@ -747,31 +995,30 @@ function CareerTimeline({ stops }: { stops: CareerStop[] }) {
                 className="rounded-xl border p-4 transition-all"
                 style={
                   stop.is_current
-                    ? { borderColor: "rgba(251,191,36,0.25)", background: "rgba(251,191,36,0.04)" }
-                    : { borderColor: "rgba(255,255,255,0.08)", background: "#0d1810" }
+                    ? { background: "rgba(251,191,36,0.06)", borderColor: "rgba(251,191,36,0.2)" }
+                    : { background: "rgba(255,255,255,0.03)", borderColor: "rgba(255,255,255,0.07)" }
                 }
               >
-                <div className="flex items-start justify-between gap-3 flex-wrap">
-                  <div className="min-w-0">
-                    <h4 className="font-black text-white text-sm">{stop.role}</h4>
-                    <div className="text-xs text-emerald-400 font-semibold mt-0.5">{stop.organization}</div>
-                  </div>
-                  {stop.is_current && (
+                <div className="flex flex-wrap items-center justify-between gap-2 mb-1">
+                  <h4 className="font-black text-white text-sm">{stop.role}</h4>
+                  {stop.year && (
                     <span
-                      className="text-[9px] font-bold px-2 py-0.5 rounded-full shrink-0"
-                      style={{ background: "#fbbf24", color: "#022c22" }}
+                      className="text-[10px] font-bold px-2 py-0.5 rounded-full ltr-numbers"
+                      style={
+                        stop.is_current
+                          ? { background: "rgba(251,191,36,0.15)", color: "#fbbf24" }
+                          : { background: "rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.4)" }
+                      }
                     >
-                      حالياً
+                      {stop.year}
                     </span>
                   )}
                 </div>
-                {stop.period_label && (
-                  <div className="text-[11px] text-white/30 mt-2 font-mono" dir="ltr">
-                    {stop.period_label}
-                  </div>
+                {stop.organization && (
+                  <p className="text-xs text-emerald-400/70 font-semibold mb-1">{stop.organization}</p>
                 )}
                 {stop.description && (
-                  <p className="text-sm text-white/45 mt-2 leading-relaxed">{stop.description}</p>
+                  <p className="text-xs text-white/40 leading-relaxed">{stop.description}</p>
                 )}
               </div>
             </li>
@@ -779,5 +1026,54 @@ function CareerTimeline({ stops }: { stops: CareerStop[] }) {
         ))}
       </ol>
     </div>
+  );
+}
+
+/* ── Shared SVG Icons ────────────────────────────────── */
+
+function IconWhatsApp() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 00-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
+    </svg>
+  );
+}
+
+function IconYears() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <circle cx="12" cy="12" r="10" />
+      <polyline points="12,6 12,12 16,14" />
+    </svg>
+  );
+}
+
+function IconPlayers() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" />
+      <circle cx="9" cy="7" r="4" />
+      <path d="M23 21v-2a4 4 0 00-3-3.87" />
+      <path d="M16 3.13a4 4 0 010 7.75" />
+    </svg>
+  );
+}
+
+function IconAcademy() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
+      <polyline points="9,22 9,12 15,12 15,22" />
+    </svg>
+  );
+}
+
+function IconCamp() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <polygon points="12,2 2,22 22,22" />
+      <line x1="12" y1="11" x2="12" y2="17" />
+      <line x1="9" y1="14" x2="15" y2="14" />
+    </svg>
   );
 }
