@@ -16,6 +16,7 @@ import {
   type CareerStop,
   type Achievement,
 } from "@/lib/landing";
+import { AnimatedCardStack } from "@/components/landing/animated-cards";
 
 export const dynamic = "force-dynamic";
 
@@ -201,7 +202,7 @@ export default async function Home() {
                 return (
                   <Reveal key={f.id} delay={Math.min(i * 80, 400)}>
                     <div
-                      className="grid lg:grid-cols-2 gap-0 rounded-3xl overflow-hidden border card-glow-blue"
+                      className="grid lg:grid-cols-2 gap-0 rounded-3xl overflow-hidden border card-glow-blue card-shimmer card-reveal"
                       style={{ background: SURF2, borderColor: BORD }}
                     >
                       {/* In RTL: even → visual on RIGHT (first in DOM), odd → visual on LEFT (second in DOM) */}
@@ -260,7 +261,7 @@ export default async function Home() {
                 <div className="text-center group">
                   <div className="relative inline-block mb-6">
                     <div
-                      className="w-24 h-24 rounded-2xl flex items-center justify-center mx-auto transition-transform duration-300 group-hover:scale-105"
+                      className={`w-24 h-24 rounded-2xl flex items-center justify-center mx-auto icon-pop-hover float-bob float-bob-delay-${i}`}
                       style={{
                         background: step.bg,
                         border: `1px solid ${step.border}`,
@@ -460,7 +461,7 @@ export default async function Home() {
             </Reveal>
             <div className="columns-1 md:columns-2 lg:columns-3 gap-5">
               {testimonials.map((t, i) => (
-                <Reveal key={t.id} delay={i * 70} className="break-inside-avoid mb-5">
+                <Reveal key={t.id} delay={i * 70} className="break-inside-avoid mb-5 testimonial-sway">
                   <TestimonialCard t={t} />
                 </Reveal>
               ))}
@@ -558,80 +559,9 @@ export default async function Home() {
                 </div>
               </Reveal>
 
-              {/* Visual side: mock app cards */}
-              <Reveal delay={200} className="hidden md:flex flex-col gap-4 items-center">
-                <div className="relative w-full max-w-sm">
-                  {/* Mock card 1 */}
-                  <div
-                    className="rounded-2xl p-5 border w-full"
-                    style={{
-                      background: SURF2,
-                      borderColor: BORD_HI,
-                      boxShadow: "0 24px 64px rgba(0,0,0,0.5), 0 0 0 1px rgba(59,130,246,0.1)",
-                    }}
-                  >
-                    <div className="flex items-center justify-between mb-4">
-                      <span className="text-xs font-bold" style={{ color: "rgba(241,245,249,0.5)" }}>الحضور اليوم</span>
-                      <span
-                        className="inline-flex items-center gap-1 text-xs font-bold px-2 py-0.5 rounded-full"
-                        style={{ background: "rgba(16,185,129,0.12)", color: "#6EE7B7" }}
-                      >
-                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-                        مباشر
-                      </span>
-                    </div>
-                    <div className="text-3xl font-black text-white mb-1">94%</div>
-                    <div className="w-full rounded-full overflow-hidden" style={{ height: 6, background: "rgba(255,255,255,0.08)" }}>
-                      <div
-                        className="h-full rounded-full"
-                        style={{ width: "94%", background: `linear-gradient(90deg, ${BLUE}, ${CYAN})` }}
-                      />
-                    </div>
-                    <p className="text-xs mt-2" style={{ color: "rgba(241,245,249,0.35)" }}>٤٧ من أصل ٥٠ لاعباً</p>
-                  </div>
-
-                  {/* Mock card 2 */}
-                  <div
-                    className="rounded-2xl p-5 border w-4/5 mx-auto mt-3"
-                    style={{
-                      background: SURF,
-                      borderColor: BORD,
-                      boxShadow: "0 16px 40px rgba(0,0,0,0.4)",
-                      transform: "rotate(-1.5deg)",
-                    }}
-                  >
-                    <div className="text-xs font-bold mb-3" style={{ color: "rgba(241,245,249,0.5)" }}>المدفوعات — هذا الشهر</div>
-                    <div className="text-2xl font-black" style={{ color: AMBER }}>١٢٬٥٠٠ ر.س</div>
-                    <div className="flex items-center gap-1 mt-1 text-xs" style={{ color: "rgba(16,185,129,0.8)" }}>
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M7 14l5-5 5 5z"/></svg>
-                      +٨.٣٪ من الشهر الماضي
-                    </div>
-                  </div>
-
-                  {/* Mock card 3 */}
-                  <div
-                    className="rounded-2xl p-4 border w-3/4 mx-auto mt-3"
-                    style={{
-                      background: SURF2,
-                      borderColor: `${CYAN}33`,
-                      boxShadow: "0 8px 24px rgba(0,0,0,0.3)",
-                      transform: "rotate(1deg)",
-                    }}
-                  >
-                    <div className="flex items-center gap-2">
-                      <div
-                        className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
-                        style={{ background: `${CYAN}18` }}
-                      >
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={CYAN} strokeWidth="2" strokeLinecap="round"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
-                      </div>
-                      <div>
-                        <div className="text-xs font-bold text-white">لاعب جديد انضمّ</div>
-                        <div className="text-[10px]" style={{ color: "rgba(241,245,249,0.4)" }}>منذ لحظات</div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+              {/* Visual side: animated card stack */}
+              <Reveal delay={200} className="hidden md:block">
+                <AnimatedCardStack />
               </Reveal>
             </div>
           </div>
@@ -946,7 +876,7 @@ function FounderStat({ value, suffix, label }: { value: number; suffix?: string;
 function TestimonialCard({ t }: { t: Testimonial }) {
   return (
     <div
-      className="rounded-2xl border p-6 relative overflow-hidden transition-all duration-300 card-glow-blue"
+      className="rounded-2xl border p-6 relative overflow-hidden transition-all duration-300 card-glow-blue card-shimmer card-reveal"
       style={{ background: SURF2, borderColor: BORD }}
     >
       <div

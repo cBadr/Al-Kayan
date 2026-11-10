@@ -507,3 +507,115 @@ table .cell-wrap, table .cell-wrap * { white-space: normal; }
   z-index: -1;
   pointer-events: none;
 }
+
+/* ── Motion Effects ─────────────────────────────────────── */
+
+/* Shimmer sweep across a card border */
+@keyframes shimmer-border {
+  0%   { background-position: 200% center; }
+  100% { background-position: -200% center; }
+}
+
+.card-shimmer {
+  position: relative;
+  isolation: isolate;
+}
+.card-shimmer::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  background: linear-gradient(
+    105deg,
+    rgba(59,130,246,0) 0%,
+    rgba(59,130,246,0) 35%,
+    rgba(96,165,250,0.5) 50%,
+    rgba(34,211,238,0.4) 55%,
+    rgba(59,130,246,0) 65%,
+    rgba(59,130,246,0) 100%
+  );
+  background-size: 300% 100%;
+  animation: shimmer-border 3.6s linear infinite;
+  z-index: -1;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+.card-shimmer:hover::before {
+  opacity: 1;
+}
+
+/* Feature card "reveal stripe" on hover */
+@keyframes reveal-stripe {
+  0%   { transform: translateX(100%) skewX(-12deg); }
+  100% { transform: translateX(-220%) skewX(-12deg); }
+}
+
+.card-reveal {
+  position: relative;
+  overflow: hidden;
+}
+.card-reveal::after {
+  content: "";
+  position: absolute;
+  top: 0; bottom: 0;
+  width: 55%;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(59,130,246,0.07) 50%,
+    transparent 100%
+  );
+  transform: translateX(100%) skewX(-12deg);
+  pointer-events: none;
+}
+.card-reveal:hover::after {
+  animation: reveal-stripe 0.65s cubic-bezier(0.25,0.46,0.45,0.94) forwards;
+}
+
+/* Icon float bob */
+@keyframes float-bob {
+  0%, 100% { transform: translateY(0px);  }
+  50%       { transform: translateY(-6px); }
+}
+.float-bob {
+  animation: float-bob 3s ease-in-out infinite;
+}
+.float-bob-delay-1 { animation-delay: 0.6s; }
+.float-bob-delay-2 { animation-delay: 1.2s; }
+.float-bob-delay-3 { animation-delay: 1.8s; }
+
+/* How-it-works step icon spin on hover */
+@keyframes icon-pop {
+  0%   { transform: scale(1) rotate(0deg); }
+  40%  { transform: scale(1.18) rotate(-8deg); }
+  70%  { transform: scale(1.1) rotate(4deg); }
+  100% { transform: scale(1.05) rotate(0deg); }
+}
+.icon-pop-hover:hover {
+  animation: icon-pop 0.45s cubic-bezier(0.34,1.56,0.64,1) forwards;
+}
+
+/* Stat card number glow pulse on viewport entry */
+@keyframes number-appear {
+  0%   { opacity: 0; transform: scale(0.7) translateY(12px); filter: blur(4px); }
+  100% { opacity: 1; transform: scale(1)   translateY(0);    filter: blur(0px); }
+}
+.number-appear {
+  animation: number-appear 0.7s cubic-bezier(0.34,1.56,0.64,1) both;
+}
+
+/* Testimonial card subtle sway */
+@keyframes card-sway {
+  0%, 100% { transform: rotate(0deg); }
+  25%       { transform: rotate(0.4deg); }
+  75%       { transform: rotate(-0.4deg); }
+}
+.testimonial-sway:nth-child(even) {
+  animation: card-sway 7s ease-in-out infinite;
+  transform-origin: bottom center;
+}
+.testimonial-sway:nth-child(odd) {
+  animation: card-sway 9s ease-in-out infinite reverse;
+  transform-origin: bottom center;
+}
